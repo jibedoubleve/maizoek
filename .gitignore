@@ -1,0 +1,12 @@
+# Vim
+*.swp
+
+# Scripts configuration
+config.json
+cities.*
+immoweb_urls.txt
+immoweb_urls.md
+query_params.json
+
+# Pythons
+__pycache__/

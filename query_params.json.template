@@ -1,0 +1,20 @@
+{
+  "address": null,
+  "radius": 50,
+  "fcodes": ["PPL", "PPLA", "PPLA2", "PPLA3", "PPLA4"],
+  "min_population": 5000,
+  "dir_from": null,
+  "dir_to": null, 
+  "country": null,
+  "geonames_username": null, 
+  "immoweb": {
+    "transaction": "for-sale",
+    "property_type": "house",
+    "min_price": 0,
+    "max_price": 0,
+    "min_bedrooms": 0,
+    "max_bedrooms": 0,
+    "min_land_surface": null,
+    "epc_scores": ["A++", "A+", "A", "B", "C"]
+  }
+}
