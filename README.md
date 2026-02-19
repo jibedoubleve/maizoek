@@ -7,16 +7,14 @@ Tools to find cities and generate Immoweb search URLs for house hunting in Belgi
 
 ## Prerequisites
 
-To check out the code and prepare all the dependencies before executing the scripts:
+After cloning the repository, run the installation script to create a virtual environment and install dependencies.
 
 ### Linux / macOS
 
 ```bash
 git clone <your-repo>
 cd immoweb-search
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+./script/install.sh
 ```
 
 ### Windows (PowerShell)
@@ -24,10 +22,10 @@ pip install -r requirements.txt
 ```powershell
 git clone <your-repo>
 cd immoweb-search
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
+.\script\install.ps1
 ```
+
+> The install scripts create a `.venv` virtual environment and install all required packages from `requirements.txt`.
 
 ## Usage
 
@@ -48,12 +46,15 @@ This runs the full workflow and opens the search results in your browser.
 ## How It Works
 
 ```
-query_params.json               ← Configuration
-        │
-        ▼
 ┌─────────────────────┐
 │   script/run.sh     │         ← Entry point
 └──────────┬──────────┘
+           │
+           ▼
+    init_config.py              ← Interactive wizard (first run only)
+           │                       creates query_params.json if missing
+           ▼
+  query_params.json             ← Configuration
            │
            ▼
     fetch_cities.py             ← Fetches cities from GeoNames API
@@ -70,8 +71,11 @@ query_params.json               ← Configuration
 
 | Script | Description |
 |--------|-------------|
+| `script/install.sh` | Setup script for Linux/macOS (creates venv, installs deps) |
+| `script/install.ps1` | Setup script for Windows (creates venv, installs deps) |
 | `script/run.sh` | Main entry point for Linux/macOS |
 | `script/run.ps1` | Main entry point for Windows (PowerShell) |
+| `src/init_config.py` | Interactive wizard to create `query_params.json` on first run |
 | `src/fetch_cities.py` | Fetches cities from GeoNames API, filters by direction and region |
 | `src/filter_cities.py` | Filters cities by compass direction from center point |
 | `src/generate_urls.py` | Generates Immoweb search URLs |
@@ -93,7 +97,7 @@ Edit `query_params.json` to configure the search:
 | `country` | Country code filter (e.g., `BE` for Belgium) |
 | `regions` | List of region codes to include (e.g., `["WAL"]`) or `null` for all |
 | `geonames_username` | GeoNames API username |
-| `language` | Interface language (`fr` or `en`) |
+| `language` | Interface language (`fr`, `nl`, or `en`) |
 
 ### Direction Options
 
@@ -120,7 +124,7 @@ Edit `query_params.json` to configure the search:
 | `immoweb.min_land_surface` | Minimum land/garden surface (or `null` to disable) | m² |
 | `immoweb.epc_scores` | EPC/PEB ratings to include (or `null` to disable) | array |
 
-**EPC Scores:** `["A++", "A+", "A", "B", "C", "D", "E", "F", "G"]`
+**EPC Scores:** `["A++", "A+", "A", "B", "C", "D", "E", "F"]`
 
 ## Feature Codes
 
@@ -142,4 +146,4 @@ Edit `query_params.json` to configure the search:
 ## Dependencies
 
 - Python 3
-- Python packages: `folium`, `jinja2`, `pandas`
+- Python packages: `folium`, `jinja2`
