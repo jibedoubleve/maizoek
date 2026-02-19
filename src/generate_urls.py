@@ -1,22 +1,13 @@
 #!/usr/bin/env python3
 """
 Generate Immoweb search URLs for cities.
-
-Reads filtered cities from cities.json, fetches postal codes from GeoNames API,
-and generates both a single combined URL and individual city URLs.
-
-Usage: python3 generate_urls.py
-Output: immoweb_urls.txt
 """
 import json
 import urllib.request
 import urllib.parse
-import subprocess
 
-# Input/output files
+# Input files
 CONFIG_FILE = "query_params.json"
-CITIES_FILE = "cities.json"
-OUTPUT_FILE = "immoweb_urls.md"
 
 # URLs
 IMMOWEB_BASE_URL = "https://www.immoweb.be/en/search"
@@ -30,21 +21,8 @@ def load_config():
     Returns:
         Configuration dictionary
     """
-    with open(CONFIG_FILE, 'r') as f:
+    with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
         return json.load(f)
-
-
-def load_cities():
-    """
-    Load filtered cities from cities.json.
-
-    Returns:
-        List of city dictionaries with lat, lng, toponymName, etc.
-    """
-    with open(CITIES_FILE, 'r') as f:
-        data = json.load(f)
-
-    return data.get("cities", [])
 
 
 def fetch_postal_code(lat, lng, username):
@@ -166,72 +144,3 @@ def generate_city_url(city_name, config):
     normalized = city_name.lower().replace(" ", "-").replace("'", "-")
 
     return f"{IMMOWEB_BASE_URL}/{property_type}/{transaction}/{normalized}"
-
-
-def main():
-    """
-    Main function: fetch postal codes and generate Immoweb URLs.
-    """
-    # Load data
-    config = load_config()
-    cities = load_cities()
-    username = config.get("geonames_username", "")
-
-    if not username:
-        print("Error: geonames_username not found in config")
-        return
-
-    print(f"Processing {len(cities)} cities...")
-    print()
-
-    # Fetch postal codes for each city
-    postal_codes = []
-    city_postal_map = {}
-
-    for city in cities:
-        city_name = city.get("toponymName", city.get("name", ""))
-        lat = city.get("lat")
-        lng = city.get("lng")
-
-        print(f"  {city_name}: fetching postal code...", end=" ")
-        postal_code = fetch_postal_code(lat, lng, username)
-
-        if postal_code:
-            print(f"{postal_code}")
-            postal_codes.append(postal_code)
-            city_postal_map[city_name] = postal_code
-        else:
-            print("not found")
-
-    print()
-
-    # Remove duplicates while preserving order
-    unique_postal_codes = list(dict.fromkeys(postal_codes))
-
-    # Generate combined URL
-    combined_url = generate_combined_url(unique_postal_codes, config)
-
-    # Write output
-    with open(OUTPUT_FILE, 'w') as f:
-        f.write("# Immoweb Search\n\n")
-        f.write("I you want to edit the criteria of the search,\nYou can edit the file `query_params.json`\n\n")
-        f.write("Documentation can be found at README.md ")
-        f.write("or on [Github](https://github.com/jibedoubleve/immoweb-search)\n\n")
-        f.write(f"> [Search on Immoweb]({combined_url})")
-        f.write("\n\n")
-        f.write("# Cities included in the search\n\n")
-        for city in cities:
-            city_name = city.get("toponymName", city.get("name", ""))
-            postal = city_postal_map.get(city_name, "?")
-            city_url = generate_city_url(city_name, config)
-            f.write(f"* [{city_name} - {postal}]({city_url})\n\n")
-
-    # Print results
-    print(f"Generated URLs for {len(unique_postal_codes)} postal codes")
-    print(f"Output saved to {OUTPUT_FILE}")
-    print()
-    print("=== COMBINED SEARCH URL ===")
-    print(combined_url)
-
-if __name__ == "__main__":
-    main()

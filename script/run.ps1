@@ -39,6 +39,6 @@ Write-Host ""
 
 # Open results in browser
 Write-Host "Opening results in browser..."
-Start-Process index.html
+Start-Process (Join-Path (Get-Location).Path "index.html")
 
 Write-Host "=== Done ===" -ForegroundColor Green

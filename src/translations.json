@@ -50,5 +50,31 @@
     "min": "min",
     "max": "max",
     "not_specified": "Not specified"
+  },
+  "nl": {
+    "title": "Immoweb Zoeken",
+    "description": "Om de zoekcriteria te wijzigen, bewerk het bestand",
+    "documentation": "Documentatie",
+    "search_button": "Zoeken op Immoweb",
+    "cities_title": "Steden in de zoekopdracht",
+    "map_title": "Kaart van het zoekgebied",
+    "location_params": "Zoekgebied",
+    "search_params": "Zoekcriteria",
+    "center": "Centrum",
+    "radius": "Straal",
+    "regions": "Regio's",
+    "transaction": "Transactie",
+    "property_type": "Type woning",
+    "price": "Prijs",
+    "bedrooms": "Slaapkamers",
+    "land_surface": "Perceeloppervlakte",
+    "epc": "EPC",
+    "for-sale": "Te koop",
+    "for-rent": "Te huur",
+    "house": "Huis",
+    "apartment": "Appartement",
+    "min": "min",
+    "max": "max",
+    "not_specified": "Niet opgegeven"
   }
 }

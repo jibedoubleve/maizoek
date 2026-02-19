@@ -1,3 +1,2 @@
 folium
 jinja2
-pandas

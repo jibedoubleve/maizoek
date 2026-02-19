@@ -24,7 +24,7 @@ GEONAMES_BASE_URL = "http://api.geonames.org"
 
 def load_config():
     """Load configuration from query_params.json."""
-    with open(CONFIG_FILE, 'r') as f:
+    with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
         return json.load(f)
 
 
@@ -234,7 +234,7 @@ def main():
     }
 
     # Write to file
-    with open(OUTPUT_FILE, 'w') as f:
+    with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
         json.dump(output, f, indent=2, ensure_ascii=False)
 
     print()

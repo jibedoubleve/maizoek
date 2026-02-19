@@ -11,7 +11,6 @@ import sys
 from pathlib import Path
 
 CONFIG_FILE = Path(__file__).parent.parent / "query_params.json"
-TEMPLATE_FILE = Path(__file__).parent.parent / "query_params.template.json"
 
 
 def prompt_choice(question: str, options: list[str], default: str | None = None) -> str:

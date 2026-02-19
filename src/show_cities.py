@@ -31,7 +31,7 @@ def load_translations(language):
 
 def load_cities():
     """Load cities and center coordinates from cities.json."""
-    with open(CITIES_FILE, 'r') as f:
+    with open(CITIES_FILE, 'r', encoding='utf-8') as f:
         data = json.load(f)
     return data.get("cities", []), data.get("center", {})
 
@@ -131,7 +131,7 @@ def main():
     )
 
     # Save the complete page
-    with open(OUTPUT_FILE, 'w') as f:
+    with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
         f.write(complete_html)
 
     print(f"Page saved as {OUTPUT_FILE}")

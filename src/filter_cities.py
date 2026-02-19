@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
-import json
 import math
-import sys
 
 # Direction to degrees mapping
 DIRECTIONS = {
@@ -78,69 +76,3 @@ def is_in_direction_range(bearing, dir_from, dir_to):
         # Range crosses 0° (e.g., West to North = 270° to 0°)
         # Bearing is valid if it's >= from_deg OR <= to_deg
         return bearing >= from_deg or bearing <= to_deg
-
-
-def main():
-    """
-    Filter cities by compass direction from a center point.
-
-    Reads a JSON file containing a center point and list of cities,
-    filters cities that fall within a specified compass direction range,
-    and writes the filtered result back to the JSON file.
-
-    Usage: filter_cities.py <json_file> <dir_from> <dir_to>
-
-    Input/Output JSON format:
-        {
-            "center": {"lat": 50.63, "lng": 5.57},
-            "cities": [{"toponymName": "City", "lat": "50.5", "lng": "5.4"}, ...]
-        }
-    """
-    # Validate command-line arguments
-    if len(sys.argv) < 4:
-        print("Usage: filter_cities.py <json_file> <dir_from> <dir_to>", file=sys.stderr)
-        sys.exit(1)
-
-    # Parse arguments
-    json_file = sys.argv[1]
-    dir_from = sys.argv[2]
-    dir_to = sys.argv[3]
-
-    # Load the JSON data
-    with open(json_file, 'r') as f:
-        data = json.load(f)
-
-    # Extract center coordinates and cities list
-    center_lat = data['center']['lat']
-    center_lng = data['center']['lng']
-    cities = data['cities']
-
-    # Filter cities by direction
-    filtered_cities = []
-    for city in cities:
-        city_lat = float(city['lat'])
-        city_lng = float(city['lng'])
-
-        # Calculate bearing from center to this city
-        bearing = calculate_bearing(center_lat, center_lng, city_lat, city_lng)
-
-        # Keep city if it falls within the direction range
-        if is_in_direction_range(bearing, dir_from, dir_to):
-            filtered_cities.append(city)
-
-    # Sort by city name
-    filtered_cities.sort(key=lambda c: c.get('toponymName', c.get('name', '')))
-
-    # Update data with filtered cities
-    data['cities'] = filtered_cities
-
-    # Write filtered JSON back to file
-    with open(json_file, 'w') as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)
-
-    # Print summary
-    print(f"Filtered to {len(filtered_cities)} cities")
-
-
-if __name__ == "__main__":
-    main()
