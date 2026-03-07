@@ -5,7 +5,6 @@
 config.json
 query_params.json
 cities.*
-index.html
 
 # Pythons
 __pycache__/
