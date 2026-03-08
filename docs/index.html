@@ -1,0 +1,2329 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recherche Immobilière</title>
+    <style>
+        :root {
+            --color-bg: #f0f2f5;
+            --color-surface: #ffffff;
+            --color-border: #e4e7eb;
+            --color-text: #1a1d23;
+            --color-text-muted: #6b7280;
+            --color-immoweb: #003f7f;
+            --color-immoweb-hover: #002a57;
+            --color-immoweb-light: #e8f0fa;
+            --color-trevi: #c0392b;
+            --color-trevi-hover: #96281b;
+            --color-trevi-light: #fbeaea;
+            --color-tag-bg: #f3f4f6;
+            --color-tag-text: #374151;
+            --radius: 10px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.10);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            line-height: 1.5;
+        }
+
+        /* ── Header ── */
+        .header {
+            background: var(--color-surface);
+            border-bottom: 1px solid var(--color-border);
+            padding: 20px 0;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0 0 4px 0;
+            font-size: 1.6em;
+            font-weight: 700;
+            color: var(--color-text);
+            letter-spacing: -0.3px;
+        }
+        .header .subtitle {
+            font-size: 0.82em;
+            color: var(--color-text-muted);
+        }
+        .header .subtitle code {
+            background: var(--color-tag-bg);
+            padding: 1px 5px;
+            border-radius: 4px;
+            font-size: 0.95em;
+        }
+        .header .subtitle a {
+            color: var(--color-text-muted);
+        }
+
+        /* ── Main layout ── */
+        .main {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 28px 20px;
+        }
+
+        /* ── Section label ── */
+        .section-label {
+            font-size: 0.72em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--color-text-muted);
+            margin: 0 0 10px 2px;
+        }
+
+        /* ── Params grid ── */
+        .params-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+        .params-card {
+            background: var(--color-surface);
+            border-radius: var(--radius);
+            padding: 16px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--color-border);
+        }
+        .params-card-title {
+            font-size: 0.72em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--color-text-muted);
+            margin: 0 0 12px 0;
+        }
+        .param-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 7px 0;
+            border-bottom: 1px solid #f3f4f6;
+            gap: 8px;
+        }
+        .param-row:last-child { border-bottom: none; }
+        .param-label {
+            color: var(--color-text-muted);
+            font-size: 0.85em;
+            white-space: nowrap;
+        }
+        .param-value {
+            font-weight: 600;
+            font-size: 0.85em;
+            color: var(--color-text);
+            text-align: right;
+        }
+        .tag {
+            display: inline-block;
+            background: var(--color-tag-bg);
+            color: var(--color-tag-text);
+            padding: 2px 8px;
+            border-radius: 5px;
+            font-size: 0.8em;
+            font-weight: 500;
+            margin: 1px 2px;
+        }
+        .tag.primary {
+            background: var(--color-immoweb-light);
+            color: var(--color-immoweb);
+        }
+        .tag.yes {
+            background: #ecfdf5;
+            color: #065f46;
+        }
+        .tag.no {
+            background: #fef2f2;
+            color: #991b1b;
+        }
+        .epc-tags { display: flex; flex-wrap: wrap; gap: 3px; justify-content: flex-end; }
+        .epc-tag {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.72em;
+            font-weight: 700;
+        }
+        .epc-a  { background: #00a651; color: #fff; }
+        .epc-b  { background: #50b848; color: #fff; }
+        .epc-c  { background: #bdd630; color: #333; }
+        .epc-d  { background: #fff200; color: #333; }
+        .epc-e  { background: #fcb814; color: #333; }
+        .epc-f  { background: #f36f21; color: #fff; }
+        .epc-g  { background: #ed1c24; color: #fff; }
+
+        /* ── Search buttons ── */
+        .search-actions {
+            display: flex;
+            gap: 14px;
+            margin-bottom: 28px;
+        }
+        .search-btn {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 16px 24px;
+            border-radius: var(--radius);
+            text-decoration: none;
+            font-size: 1em;
+            font-weight: 600;
+            box-shadow: var(--shadow-md);
+            transition: background-color 0.15s, box-shadow 0.15s, transform 0.1s;
+        }
+        .search-btn:hover {
+            box-shadow: 0 6px 18px rgba(0,0,0,0.16);
+            transform: translateY(-1px);
+        }
+        .search-btn:active { transform: translateY(0); }
+        .search-btn-immoweb {
+            background: var(--color-immoweb);
+            color: #fff;
+        }
+        .search-btn-immoweb:hover { background: var(--color-immoweb-hover); }
+        .search-btn-trevi {
+            background: var(--color-trevi);
+            color: #fff;
+        }
+        .search-btn-trevi:hover { background: var(--color-trevi-hover); }
+        .btn-logo {
+            width: 22px;
+            height: 22px;
+            border-radius: 4px;
+            background: rgba(255,255,255,0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85em;
+            font-weight: 800;
+        }
+
+        /* ── Cities section ── */
+        .cities-card {
+            background: var(--color-surface);
+            border-radius: var(--radius);
+            border: 1px solid var(--color-border);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+        .cities-card-header {
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--color-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .cities-card-header h2 {
+            margin: 0;
+            font-size: 0.85em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--color-text-muted);
+        }
+        .city-count {
+            background: var(--color-tag-bg);
+            color: var(--color-text-muted);
+            font-size: 0.75em;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 20px;
+        }
+        .city-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .city-item {
+            display: flex;
+            align-items: center;
+            padding: 9px 18px;
+            border-bottom: 1px solid #f9fafb;
+            gap: 12px;
+        }
+        .city-item:last-child { border-bottom: none; }
+        .city-item:hover { background: #fafbfc; }
+        .city-name {
+            flex: 1;
+            font-size: 0.88em;
+            color: var(--color-text);
+            font-weight: 500;
+        }
+        .city-postal {
+            font-size: 0.78em;
+            color: var(--color-text-muted);
+            background: var(--color-tag-bg);
+            padding: 1px 7px;
+            border-radius: 4px;
+        }
+        .city-links {
+            display: flex;
+            gap: 6px;
+        }
+        .city-link {
+            font-size: 0.75em;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: opacity 0.15s;
+        }
+        .city-link:hover { opacity: 0.8; }
+        .city-link-immoweb {
+            background: var(--color-immoweb-light);
+            color: var(--color-immoweb);
+        }
+        .city-link-trevi {
+            background: var(--color-trevi-light);
+            color: var(--color-trevi);
+        }
+
+        /* ── Map ── */
+        .map-section { margin-bottom: 40px; }
+        .map-container {
+            height: 460px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--color-border);
+            overflow: hidden;
+        }
+        .map-container iframe { border-radius: var(--radius); }
+
+        /* ── Responsive ── */
+        @media (max-width: 600px) {
+            .params-grid { grid-template-columns: 1fr; }
+            .search-actions { flex-direction: column; }
+        }
+        @media (max-width: 480px) {
+            .city-links { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Recherche Immobilière</h1>
+        <p class="subtitle">
+            Pour modifier les critères de recherche, éditez le fichier <code>query_params.json</code> —
+            <a href="https://github.com/jibedoubleve/immoweb-search" target="_blank">Documentation</a>
+        </p>
+    </div>
+
+    <div class="main">
+
+        <!-- Parameters -->
+        <p class="section-label">Critères de recherche</p>
+        <div class="params-grid">
+
+            <!-- Location -->
+            <div class="params-card">
+                <p class="params-card-title">Zone de recherche</p>
+                <div class="param-row">
+                    <span class="param-label">Centre</span>
+                    <span class="param-value">Liège</span>
+                </div>
+                <div class="param-row">
+                    <span class="param-label">Rayon</span>
+                    <span class="param-value">30 km</span>
+                </div>
+                
+                <div class="param-row">
+                    <span class="param-label">Régions</span>
+                    <span class="param-value">
+                        <span class="tag">WAL</span>
+                    </span>
+                </div>
+                
+            </div>
+
+            <!-- Search criteria -->
+            <div class="params-card">
+                <p class="params-card-title">Critères de recherche</p>
+                <div class="param-row">
+                    <span class="param-label">Transaction</span>
+                    <span class="param-value">
+                        <span class="tag primary">À vendre</span>
+                    </span>
+                </div>
+                <div class="param-row">
+                    <span class="param-label">Type de bien</span>
+                    <span class="param-value">
+                        
+                            
+                            <span class="tag">House</span>
+                            
+                            <span class="tag">Villa</span>
+                            
+                            <span class="tag">Mansion</span>
+                            
+                            <span class="tag">Manor House</span>
+                            
+                            <span class="tag">Chalet</span>
+                            
+                            <span class="tag">Farmhouse</span>
+                            
+                            <span class="tag">Exceptional Property</span>
+                            
+                            <span class="tag">Town House</span>
+                            
+                            <span class="tag">Castle</span>
+                            
+                            <span class="tag">Bungalow</span>
+                            
+                            <span class="tag">Country Cottage</span>
+                            
+                            <span class="tag">Pavilion</span>
+                            
+                        
+                    </span>
+                </div>
+                <div class="param-row">
+                    <span class="param-label">Prix</span>
+                    <span class="param-value">
+                        
+                            400 000 €
+                            →
+                            800 000 €
+                        
+                    </span>
+                </div>
+                <div class="param-row">
+                    <span class="param-label">Chambres</span>
+                    <span class="param-value">
+                        
+                            min 4
+                            
+                            
+                        
+                    </span>
+                </div>
+                
+                
+                <div class="param-row">
+                    <span class="param-label">PEB</span>
+                    <span class="epc-tags">
+                        
+                        <span class="epc-tag epc-a">A++</span>
+                        
+                        <span class="epc-tag epc-a">A+</span>
+                        
+                        <span class="epc-tag epc-a">A</span>
+                        
+                        <span class="epc-tag epc-b">B</span>
+                        
+                        <span class="epc-tag epc-c">C</span>
+                        
+                    </span>
+                </div>
+                
+            </div>
+
+        </div>
+
+        <!-- Search buttons -->
+        <div class="search-actions">
+            <a href="https://www.immoweb.be/en/search/house/for-sale?countries=BE&postalCodes=4432,4540,4430,4520,4340,4257,4261,4367,4357,4480,4317,4347,4400,4250,4000,4690,4460,4500,4101,4450,4360,4020,4431,4570,4420,4350,4470,4537,4530,4300&minPrice=400000&maxPrice=800000&minBedroomCount=4&epcScores=A++,A+,A,B,C&propertySubtypes=HOUSE,VILLA,MANSION,MANOR_HOUSE,CHALET,FARMHOUSE,EXCEPTIONAL_PROPERTY,TOWN_HOUSE,CASTLE,BUNGALOW,COUNTRY_COTTAGE,PAVILION" target="_blank" class="search-btn search-btn-immoweb">
+                <span class="btn-logo">iw</span>
+                Rechercher sur Immoweb
+            </a>
+            <a href="https://www.trevi.be/fr/acheter-bien-immobilier/maisons?purpose=0&estatecategory=1&minprice=400000&maxprice=800000&zips%5B%5D=4432_Alleur&zips%5B%5D=4540_Amay&zips%5B%5D=4540_Ampsin&zips%5B%5D=4430_Ans&zips%5B%5D=4520_Antheit&zips%5B%5D=4340_Awans&zips%5B%5D=4257_Berloz&zips%5B%5D=4261_Braives&zips%5B%5D=4367_Crisn%C3%A9e&zips%5B%5D=4357_Donceel&zips%5B%5D=4480_Engis&zips%5B%5D=4317_Faimes&zips%5B%5D=4347_Fexhe-le-Haut-Clocher&zips%5B%5D=4400_Fl%C3%A9malle-Grande&zips%5B%5D=4400_Fl%C3%A9malle-Haute&zips%5B%5D=4250_Geer&zips%5B%5D=4000_Glain&zips%5B%5D=4690_Glons&zips%5B%5D=4460_Gr%C3%A2ce-Berleur&zips%5B%5D=4460_Hollogne-aux-Pierres&zips%5B%5D=4500_Huy&zips%5B%5D=4400_Ivoz-Ramet&zips%5B%5D=4101_Jemeppe-sur-Meuse&zips%5B%5D=4450_Juprelle&zips%5B%5D=4360_Lens-sur-Geer&zips%5B%5D=4020_Li%C3%A8ge&zips%5B%5D=4431_Loncin&zips%5B%5D=4570_Marchin&zips%5B%5D=4400_Mons-lez-Li%C3%A8ge&zips%5B%5D=4420_Montegn%C3%A9e&zips%5B%5D=4360_Oreye&zips%5B%5D=4350_Remicourt&zips%5B%5D=4000_Rocourt&zips%5B%5D=4470_Saint-Georges-sur-Meuse&zips%5B%5D=4420_Saint-Nicolas&zips%5B%5D=4500_Tihange&zips%5B%5D=4420_Tilleur&zips%5B%5D=4537_Verlaine&zips%5B%5D=4530_Villers-le-Bouillet&zips%5B%5D=4520_Wanze&zips%5B%5D=4300_Waremme" target="_blank" class="search-btn search-btn-trevi">
+                <span class="btn-logo">tr</span>
+                Rechercher sur Trevi
+            </a>
+        </div>
+
+        <!-- Cities list -->
+        <div class="cities-card">
+            <div class="cities-card-header">
+                <h2>Villes incluses dans la recherche</h2>
+                <span class="city-count">41</span>
+            </div>
+            <ul class="city-list">
+                
+                <li class="city-item">
+                    <span class="city-name">Alleur</span>
+                    <span class="city-postal">4432</span>
+                    <div class="city-links">
+                        <a href="https://www.immoweb.be/en/search/house/for-sale/alleur" target="_blank" class="city-link city-link-immoweb">Immoweb</a>
+                        <a href="https://www.trevi.be/fr/acheter-bien-immobilier/maisons?purpose=0&estatecategory=1&minprice=400000&maxprice=800000&zips%5B%5D=4432_Alleur" target="_blank" class="city-link city-link-trevi">Trevi</a>
+                    </div>
+                </li>
+                
+                <li class="city-item">
+                    <span class="city-name">Amay</span>
+                    <span class="city-postal">4540</span>
+                    <div class="city-links">
+                        <a href="https://www.immoweb.be/en/search/house/for-sale/amay" target="_blank" class="city-link city-link-immoweb">Immoweb</a>
+                        <a href="https://www.trevi.be/fr/acheter-bien-immobilier/maisons?purpose=0&estatecategory=1&minprice=400000&maxprice=800000&zips%5B%5D=4540_Amay" target="_blank" class="city-link city-link-trevi">Trevi</a>
+                    </div>
+                </li>
+                
+                <li class="city-item">
+                    <span class="city-name">Ampsin</span>
+                    <span class="city-postal">4540</span>
+                    <div class="city-links">
+                        <a href="https://www.immoweb.be/en/search/house/for-sale/ampsin" target="_blank" class="city-link city-link-immoweb">Immoweb</a>
+                        <a href="https://www.trevi.be/fr/acheter-bien-immobilier/maisons?purpose=0&estatecategory=1&minprice=400000&maxprice=800000&zips%5B%5D=4540_Ampsin" target="_blank" class="city-link city-link-trevi">Trevi</a>
+                    </div>
+                </li>
+                
+                <li class="city-item">
+                    <span class="city-name">Ans</span>
+                    <span class="city-postal">4430</span>
+                    <div class="city-links">
+                        <a href="https://www.immoweb.be/en/search/house/for-sale/ans" target="_blank" class="city-link city-link-immoweb">Immoweb</a>
+                        <a href="https://www.trevi.be/fr/acheter-bien-immobilier/maisons?purpose=0&estatecategory=1&minprice=400000&maxprice=800000&zips%5B%5D=4430_Ans" target="_blank" class="city-link city-link-trevi">Trevi</a>
+                    </div>
+                </li>
+                
+                <li class="city-item">
+                    <span class="city-name">Antheit</span>
+                    <span class="city-postal">4520</span>
+                    <div class="city-links">
+                        <a href="https://www.immoweb.be/en/search/house/for-sale/antheit" target="_blank" class="city-link city-link-immoweb">Immoweb</a>
+                        <a href="https://www.trevi.be/fr/acheter-bien-immobilier/maisons?purpose=0&estatecategory=1&minprice=400000&maxprice=800000&zips%5B%5D=4520_Antheit" target="_blank" class="city-link city-link-trevi">Trevi</a>
+                    </div>
+                </li>
+                
+                <li class="city-item">
+                    <span class="city-name">Awans</span>
+                    <span class="city-postal">4340</span>
+                    <div class="city-links">
+                        <a href="https://www.immoweb.be/en/search/house/for-sale/awans" target="_blank" class="city-link city-link-immoweb">Immoweb</a>
+                        <a href="https://www.trevi.be/fr/acheter-bien-immobilier/maisons?purpose=0&estatecategory=1&minprice=400000&maxprice=800000&zips%5B%5D=4340_Awans" target="_blank" class="city-link city-link-trevi">Trevi</a>
+                    </div>
+                </li>
+                
+                <li class="city-item">
+                    <span class="city-name">Berloz</span>
+                    <span class="city-postal">4257</span>
+                    <div class="city-links">
+                        <a href="https://www.immoweb.be/en/search/house/for-sale/berloz" target="_blank" class="city-link city-link-immoweb">Immoweb</a>
+                        <a href="https://www.trevi.be/fr/acheter-bien-immobilier/maisons?purpose=0&estatecategory=1&minprice=400000&maxprice=800000&zips%5B%5D=4257_Berloz" target="_blank" class="city-link city-link-trevi">Trevi</a>
+                    </div>
+                </li>
+                
+                <li class="city-item">
+                    <span class="city-name">Braives</span>
+                    <span class="city-postal">4261</span>
+                    <div class="city-links">
+                        <a href="https://www.immoweb.be/en/search/house/for-sale/braives" target="_blank" class="city-link city-link-immoweb">Immoweb</a>
+                        <a href="https://www.trevi.be/fr/acheter-bien-immobilier/maisons?purpose=0&estatecategory=1&minprice=400000&maxprice=800000&zips%5B%5D=4261_Braives" target="_blank" class="city-link city-link-trevi">Trevi</a>
+                    </div>
+                </li>
+                
+                <li class="city-item">
+                    <span class="city-name">Crisnée</span>
+                    <span class="city-postal">4367</span>
+                    <div class="city-links">
+                        <a href="https://www.immoweb.be/en/search/house/for-sale/crisnée" target="_blank" class="city-link city-link-immoweb">Immoweb</a>
+                        <a href="https://www.trevi.be/fr/acheter-bien-immobilier/maisons?purpose=0&estatecategory=1&minprice=400000&maxprice=800000&zips%5B%5D=4367_Crisn%C3%A9e" target="_blank" class="city-link city-link-trevi">Trevi</a>
+                    </div>
+                </li>
+                
+                <li class="city-item">
+                    <span class="city-name">Donceel</span>
+                    <span class="city-postal">4357</span>
+                    <div class="city-links">
+                        <a href="https://www.immoweb.be/en/search/house/for-sale/donceel" target="_blank" class="city-link city-link-immoweb">Immoweb</a>
+                        <a href="https://www.trevi.be/fr/acheter-bien-immobilier/maisons?purpose=0&estatecategory=1&minprice=400000&maxprice=800000&zips%5B%5D=4357_Donceel" target="_blank" class="city-link city-link-trevi">Trevi</a>
+                    </div>
+                </li>
+                
+                <li class="city-item">
+                    <span class="city-name">Engis</span>
+                    <span class="city-postal">4480</span>
+                    <div class="city-links">
+                        <a href="https://www.immoweb.be/en/search/house/for-sale/engis" target="_blank" class="city-link city-link-immoweb">Immoweb</a>
+                        <a href="https://www.trevi.be/fr/acheter-bien-immobilier/maisons?purpose=0&estatecategory=1&minprice=400000&maxprice=800000&zips%5B%5D=4480_Engis" target="_blank" class="city-link city-link-trevi">Trevi</a>
+                    </div>
+                </li>
+                
+                <li class="city-item">
+                    <span class="city-name">Faimes</span>
+                    <span class="city-postal">4317</span>
+                    <div class="city-links">
+                        <a href="https://www.immoweb.be/en/search/house/for-sale/faimes" target="_blank" class="city-link city-link-immoweb">Immoweb</a>
+                        <a href="https://www.trevi.be/fr/acheter-bien-immobilier/maisons?purpose=0&estatecategory=1&minprice=400000&maxprice=800000&zips%5B%5D=4317_Faimes" target="_blank" class="city-link city-link-trevi">Trevi</a>
+                    </div>
+                </li>
+                
+                <li class="city-item">
+                    <span class="city-name">Fexhe-le-Haut-Clocher</span>
+                    <span class="city-postal">4347</span>
+                    <div class="city-links">
+                        <a href="https://www.immoweb.be/en/search/house/for-sale/fexhe-le-haut-clocher" target="_blank" class="city-link city-link-immoweb">Immoweb</a>
+                        <a href="https://www.trevi.be/fr/acheter-bien-immobilier/maisons?purpose=0&estatecategory=1&minprice=400000&maxprice=800000&zips%5B%5D=4347_Fexhe-le-Haut-Clocher" target="_blank" class="city-link city-link-trevi">Trevi</a>
+                    </div>
+                </li>
+                
+                <li class="city-item">
+                    <span class="city-name">Flémalle-Grande</span>
+                    <span class="city-postal">4400</span>
+                    <div class="city-links">
+                        <a href="https://www.immoweb.be/en/search/house/for-sale/flémalle-grande" target="_blank" class="city-link city-link-immoweb">Immoweb</a>
+                        <a href="https://www.trevi.be/fr/acheter-bien-immobilier/maisons?purpose=0&estatecategory=1&minprice=400000&maxprice=800000&zips%5B%5D=4400_Fl%C3%A9malle-Grande" target="_blank" class="city-link city-link-trevi">Trevi</a>
+                    </div>
+                </li>
+                
+                <li class="city-item">
+                    <span class="city-name">Flémalle-Haute</span>
+                    <span class="city-postal">4400</span>
+                    <div class="city-links">
+                        <a href="https://www.immoweb.be/en/search/house/for-sale/flémalle-haute" target="_blank" class="city-link city-link-immoweb">Immoweb</a>
+                        <a href="https://www.trevi.be/fr/acheter-bien-immobilier/maisons?purpose=0&estatecategory=1&minprice=400000&maxprice=800000&zips%5B%5D=4400_Fl%C3%A9malle-Haute" target="_blank" class="city-link city-link-trevi">Trevi</a>
+                    </div>
+                </li>
+                
+                <li class="city-item">
+                    <span class="city-name">Geer</span>
+                    <span class="city-postal">4250</span>
+                    <div class="city-links">
+                        <a href="https://www.immoweb.be/en/search/house/for-sale/geer" target="_blank" class="city-link city-link-immoweb">Immoweb</a>
+                        <a href="https://www.trevi.be/fr/acheter-bien-immobilier/maisons?purpose=0&estatecategory=1&minprice=400000&maxprice=800000&zips%5B%5D=4250_Geer" target="_blank" class="city-link city-link-trevi">Trevi</a>
+                    </div>
+                </li>
+                
+                <li class="city-item">
+                    <span class="city-name">Glain</span>
+                    <span class="city-postal">4000</span>
+                    <div class="city-links">
+                        <a href="https://www.immoweb.be/en/search/house/for-sale/glain" target="_blank" class="city-link city-link-immoweb">Immoweb</a>
+                        <a href="https://www.trevi.be/fr/acheter-bien-immobilier/maisons?purpose=0&estatecategory=1&minprice=400000&maxprice=800000&zips%5B%5D=4000_Glain" target="_blank" class="city-link city-link-trevi">Trevi</a>
+                    </div>
+                </li>
+                
+                <li class="city-item">
+                    <span class="city-name">Glons</span>
+                    <span class="city-postal">4690</span>
+                    <div class="city-links">
+                        <a href="https://www.immoweb.be/en/search/house/for-sale/glons" target="_blank" class="city-link city-link-immoweb">Immoweb</a>
+                        <a href="https://www.trevi.be/fr/acheter-bien-immobilier/maisons?purpose=0&estatecategory=1&minprice=400000&maxprice=800000&zips%5B%5D=4690_Glons" target="_blank" class="city-link city-link-trevi">Trevi</a>
+                    </div>
+                </li>
+                
+                <li class="city-item">
+                    <span class="city-name">Grâce-Berleur</span>
+                    <span class="city-postal">4460</span>
+                    <div class="city-links">
+                        <a href="https://www.immoweb.be/en/search/house/for-sale/grâce-berleur" target="_blank" class="city-link city-link-immoweb">Immoweb</a>
+                        <a href="https://www.trevi.be/fr/acheter-bien-immobilier/maisons?purpose=0&estatecategory=1&minprice=400000&maxprice=800000&zips%5B%5D=4460_Gr%C3%A2ce-Berleur" target="_blank" class="city-link city-link-trevi">Trevi</a>
+                    </div>
+                </li>
+                
+                <li class="city-item">
+                    <span class="city-name">Hollogne-aux-Pierres</span>
+                    <span class="city-postal">4460</span>
+                    <div class="city-links">
+                        <a href="https://www.immoweb.be/en/search/house/for-sale/hollogne-aux-pierres" target="_blank" class="city-link city-link-immoweb">Immoweb</a>
+                        <a href="https://www.trevi.be/fr/acheter-bien-immobilier/maisons?purpose=0&estatecategory=1&minprice=400000&maxprice=800000&zips%5B%5D=4460_Hollogne-aux-Pierres" target="_blank" class="city-link city-link-trevi">Trevi</a>
+                    </div>
+                </li>
+                
+                <li class="city-item">
+                    <span class="city-name">Huy</span>
+                    <span class="city-postal">4500</span>
+                    <div class="city-links">
+                        <a href="https://www.immoweb.be/en/search/house/for-sale/huy" target="_blank" class="city-link city-link-immoweb">Immoweb</a>
+                        <a href="https://www.trevi.be/fr/acheter-bien-immobilier/maisons?purpose=0&estatecategory=1&minprice=400000&maxprice=800000&zips%5B%5D=4500_Huy" target="_blank" class="city-link city-link-trevi">Trevi</a>
+                    </div>
+                </li>
+                
+                <li class="city-item">
+                    <span class="city-name">Ivoz-Ramet</span>
+                    <span class="city-postal">4400</span>
+                    <div class="city-links">
+                        <a href="https://www.immoweb.be/en/search/house/for-sale/ivoz-ramet" target="_blank" class="city-link city-link-immoweb">Immoweb</a>
+                        <a href="https://www.trevi.be/fr/acheter-bien-immobilier/maisons?purpose=0&estatecategory=1&minprice=400000&maxprice=800000&zips%5B%5D=4400_Ivoz-Ramet" target="_blank" class="city-link city-link-trevi">Trevi</a>
+                    </div>
+                </li>
+                
+                <li class="city-item">
+                    <span class="city-name">Jemeppe-sur-Meuse</span>
+                    <span class="city-postal">4101</span>
+                    <div class="city-links">
+                        <a href="https://www.immoweb.be/en/search/house/for-sale/jemeppe-sur-meuse" target="_blank" class="city-link city-link-immoweb">Immoweb</a>
+                        <a href="https://www.trevi.be/fr/acheter-bien-immobilier/maisons?purpose=0&estatecategory=1&minprice=400000&maxprice=800000&zips%5B%5D=4101_Jemeppe-sur-Meuse" target="_blank" class="city-link city-link-trevi">Trevi</a>
+                    </div>
+                </li>
+                
+                <li class="city-item">
+                    <span class="city-name">Juprelle</span>
+                    <span class="city-postal">4450</span>
+                    <div class="city-links">
+                        <a href="https://www.immoweb.be/en/search/house/for-sale/juprelle" target="_blank" class="city-link city-link-immoweb">Immoweb</a>
+                        <a href="https://www.trevi.be/fr/acheter-bien-immobilier/maisons?purpose=0&estatecategory=1&minprice=400000&maxprice=800000&zips%5B%5D=4450_Juprelle" target="_blank" class="city-link city-link-trevi">Trevi</a>
+                    </div>
+                </li>
+                
+                <li class="city-item">
+                    <span class="city-name">Lens-sur-Geer</span>
+                    <span class="city-postal">4360</span>
+                    <div class="city-links">
+                        <a href="https://www.immoweb.be/en/search/house/for-sale/lens-sur-geer" target="_blank" class="city-link city-link-immoweb">Immoweb</a>
+                        <a href="https://www.trevi.be/fr/acheter-bien-immobilier/maisons?purpose=0&estatecategory=1&minprice=400000&maxprice=800000&zips%5B%5D=4360_Lens-sur-Geer" target="_blank" class="city-link city-link-trevi">Trevi</a>
+                    </div>
+                </li>
+                
+                <li class="city-item">
+                    <span class="city-name">Liège</span>
+                    <span class="city-postal">4020</span>
+                    <div class="city-links">
+                        <a href="https://www.immoweb.be/en/search/house/for-sale/liège" target="_blank" class="city-link city-link-immoweb">Immoweb</a>
+                        <a href="https://www.trevi.be/fr/acheter-bien-immobilier/maisons?purpose=0&estatecategory=1&minprice=400000&maxprice=800000&zips%5B%5D=4020_Li%C3%A8ge" target="_blank" class="city-link city-link-trevi">Trevi</a>
+                    </div>
+                </li>
+                
+                <li class="city-item">
+                    <span class="city-name">Loncin</span>
+                    <span class="city-postal">4431</span>
+                    <div class="city-links">
+                        <a href="https://www.immoweb.be/en/search/house/for-sale/loncin" target="_blank" class="city-link city-link-immoweb">Immoweb</a>
+                        <a href="https://www.trevi.be/fr/acheter-bien-immobilier/maisons?purpose=0&estatecategory=1&minprice=400000&maxprice=800000&zips%5B%5D=4431_Loncin" target="_blank" class="city-link city-link-trevi">Trevi</a>
+                    </div>
+                </li>
+                
+                <li class="city-item">
+                    <span class="city-name">Marchin</span>
+                    <span class="city-postal">4570</span>
+                    <div class="city-links">
+                        <a href="https://www.immoweb.be/en/search/house/for-sale/marchin" target="_blank" class="city-link city-link-immoweb">Immoweb</a>
+                        <a href="https://www.trevi.be/fr/acheter-bien-immobilier/maisons?purpose=0&estatecategory=1&minprice=400000&maxprice=800000&zips%5B%5D=4570_Marchin" target="_blank" class="city-link city-link-trevi">Trevi</a>
+                    </div>
+                </li>
+                
+                <li class="city-item">
+                    <span class="city-name">Mons-lez-Liège</span>
+                    <span class="city-postal">4400</span>
+                    <div class="city-links">
+                        <a href="https://www.immoweb.be/en/search/house/for-sale/mons-lez-liège" target="_blank" class="city-link city-link-immoweb">Immoweb</a>
+                        <a href="https://www.trevi.be/fr/acheter-bien-immobilier/maisons?purpose=0&estatecategory=1&minprice=400000&maxprice=800000&zips%5B%5D=4400_Mons-lez-Li%C3%A8ge" target="_blank" class="city-link city-link-trevi">Trevi</a>
+                    </div>
+                </li>
+                
+                <li class="city-item">
+                    <span class="city-name">Montegnée</span>
+                    <span class="city-postal">4420</span>
+                    <div class="city-links">
+                        <a href="https://www.immoweb.be/en/search/house/for-sale/montegnée" target="_blank" class="city-link city-link-immoweb">Immoweb</a>
+                        <a href="https://www.trevi.be/fr/acheter-bien-immobilier/maisons?purpose=0&estatecategory=1&minprice=400000&maxprice=800000&zips%5B%5D=4420_Montegn%C3%A9e" target="_blank" class="city-link city-link-trevi">Trevi</a>
+                    </div>
+                </li>
+                
+                <li class="city-item">
+                    <span class="city-name">Oreye</span>
+                    <span class="city-postal">4360</span>
+                    <div class="city-links">
+                        <a href="https://www.immoweb.be/en/search/house/for-sale/oreye" target="_blank" class="city-link city-link-immoweb">Immoweb</a>
+                        <a href="https://www.trevi.be/fr/acheter-bien-immobilier/maisons?purpose=0&estatecategory=1&minprice=400000&maxprice=800000&zips%5B%5D=4360_Oreye" target="_blank" class="city-link city-link-trevi">Trevi</a>
+                    </div>
+                </li>
+                
+                <li class="city-item">
+                    <span class="city-name">Remicourt</span>
+                    <span class="city-postal">4350</span>
+                    <div class="city-links">
+                        <a href="https://www.immoweb.be/en/search/house/for-sale/remicourt" target="_blank" class="city-link city-link-immoweb">Immoweb</a>
+                        <a href="https://www.trevi.be/fr/acheter-bien-immobilier/maisons?purpose=0&estatecategory=1&minprice=400000&maxprice=800000&zips%5B%5D=4350_Remicourt" target="_blank" class="city-link city-link-trevi">Trevi</a>
+                    </div>
+                </li>
+                
+                <li class="city-item">
+                    <span class="city-name">Rocourt</span>
+                    <span class="city-postal">4000</span>
+                    <div class="city-links">
+                        <a href="https://www.immoweb.be/en/search/house/for-sale/rocourt" target="_blank" class="city-link city-link-immoweb">Immoweb</a>
+                        <a href="https://www.trevi.be/fr/acheter-bien-immobilier/maisons?purpose=0&estatecategory=1&minprice=400000&maxprice=800000&zips%5B%5D=4000_Rocourt" target="_blank" class="city-link city-link-trevi">Trevi</a>
+                    </div>
+                </li>
+                
+                <li class="city-item">
+                    <span class="city-name">Saint-Georges-sur-Meuse</span>
+                    <span class="city-postal">4470</span>
+                    <div class="city-links">
+                        <a href="https://www.immoweb.be/en/search/house/for-sale/saint-georges-sur-meuse" target="_blank" class="city-link city-link-immoweb">Immoweb</a>
+                        <a href="https://www.trevi.be/fr/acheter-bien-immobilier/maisons?purpose=0&estatecategory=1&minprice=400000&maxprice=800000&zips%5B%5D=4470_Saint-Georges-sur-Meuse" target="_blank" class="city-link city-link-trevi">Trevi</a>
+                    </div>
+                </li>
+                
+                <li class="city-item">
+                    <span class="city-name">Saint-Nicolas</span>
+                    <span class="city-postal">4420</span>
+                    <div class="city-links">
+                        <a href="https://www.immoweb.be/en/search/house/for-sale/saint-nicolas" target="_blank" class="city-link city-link-immoweb">Immoweb</a>
+                        <a href="https://www.trevi.be/fr/acheter-bien-immobilier/maisons?purpose=0&estatecategory=1&minprice=400000&maxprice=800000&zips%5B%5D=4420_Saint-Nicolas" target="_blank" class="city-link city-link-trevi">Trevi</a>
+                    </div>
+                </li>
+                
+                <li class="city-item">
+                    <span class="city-name">Tihange</span>
+                    <span class="city-postal">4500</span>
+                    <div class="city-links">
+                        <a href="https://www.immoweb.be/en/search/house/for-sale/tihange" target="_blank" class="city-link city-link-immoweb">Immoweb</a>
+                        <a href="https://www.trevi.be/fr/acheter-bien-immobilier/maisons?purpose=0&estatecategory=1&minprice=400000&maxprice=800000&zips%5B%5D=4500_Tihange" target="_blank" class="city-link city-link-trevi">Trevi</a>
+                    </div>
+                </li>
+                
+                <li class="city-item">
+                    <span class="city-name">Tilleur</span>
+                    <span class="city-postal">4420</span>
+                    <div class="city-links">
+                        <a href="https://www.immoweb.be/en/search/house/for-sale/tilleur" target="_blank" class="city-link city-link-immoweb">Immoweb</a>
+                        <a href="https://www.trevi.be/fr/acheter-bien-immobilier/maisons?purpose=0&estatecategory=1&minprice=400000&maxprice=800000&zips%5B%5D=4420_Tilleur" target="_blank" class="city-link city-link-trevi">Trevi</a>
+                    </div>
+                </li>
+                
+                <li class="city-item">
+                    <span class="city-name">Verlaine</span>
+                    <span class="city-postal">4537</span>
+                    <div class="city-links">
+                        <a href="https://www.immoweb.be/en/search/house/for-sale/verlaine" target="_blank" class="city-link city-link-immoweb">Immoweb</a>
+                        <a href="https://www.trevi.be/fr/acheter-bien-immobilier/maisons?purpose=0&estatecategory=1&minprice=400000&maxprice=800000&zips%5B%5D=4537_Verlaine" target="_blank" class="city-link city-link-trevi">Trevi</a>
+                    </div>
+                </li>
+                
+                <li class="city-item">
+                    <span class="city-name">Villers-le-Bouillet</span>
+                    <span class="city-postal">4530</span>
+                    <div class="city-links">
+                        <a href="https://www.immoweb.be/en/search/house/for-sale/villers-le-bouillet" target="_blank" class="city-link city-link-immoweb">Immoweb</a>
+                        <a href="https://www.trevi.be/fr/acheter-bien-immobilier/maisons?purpose=0&estatecategory=1&minprice=400000&maxprice=800000&zips%5B%5D=4530_Villers-le-Bouillet" target="_blank" class="city-link city-link-trevi">Trevi</a>
+                    </div>
+                </li>
+                
+                <li class="city-item">
+                    <span class="city-name">Wanze</span>
+                    <span class="city-postal">4520</span>
+                    <div class="city-links">
+                        <a href="https://www.immoweb.be/en/search/house/for-sale/wanze" target="_blank" class="city-link city-link-immoweb">Immoweb</a>
+                        <a href="https://www.trevi.be/fr/acheter-bien-immobilier/maisons?purpose=0&estatecategory=1&minprice=400000&maxprice=800000&zips%5B%5D=4520_Wanze" target="_blank" class="city-link city-link-trevi">Trevi</a>
+                    </div>
+                </li>
+                
+                <li class="city-item">
+                    <span class="city-name">Waremme</span>
+                    <span class="city-postal">4300</span>
+                    <div class="city-links">
+                        <a href="https://www.immoweb.be/en/search/house/for-sale/waremme" target="_blank" class="city-link city-link-immoweb">Immoweb</a>
+                        <a href="https://www.trevi.be/fr/acheter-bien-immobilier/maisons?purpose=0&estatecategory=1&minprice=400000&maxprice=800000&zips%5B%5D=4300_Waremme" target="_blank" class="city-link city-link-trevi">Trevi</a>
+                    </div>
+                </li>
+                
+            </ul>
+        </div>
+
+        <!-- Map -->
+        <div class="map-section">
+            <p class="section-label" style="text-align:center; margin-bottom: 12px;">Carte de la zone de recherche</p>
+            <div class="map-container">
+                <div style="width:100%;"><div style="position:relative;width:100%;height:0;padding-bottom:60%;"><span style="color:#565656">Make this Notebook Trusted to load map: File -> Trust Notebook</span><iframe srcdoc="&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+    
+    &lt;meta http-equiv=&quot;content-type&quot; content=&quot;text/html; charset=UTF-8&quot; /&gt;
+    &lt;script src=&quot;https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;https://code.jquery.com/jquery-3.7.1.min.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js&quot;&gt;&lt;/script&gt;
+    &lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js&quot;&gt;&lt;/script&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css&quot;/&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css&quot;/&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css&quot;/&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css&quot;/&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css&quot;/&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css&quot;/&gt;
+    
+            &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no&quot; /&gt;
+            &lt;style&gt;
+                #map_e126528f0abeafc8046265f5fe60f2fd {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            &lt;/style&gt;
+
+            &lt;style&gt;html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            &lt;/style&gt;
+
+            &lt;style&gt;#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            &lt;/style&gt;
+
+            &lt;script&gt;
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            &lt;/script&gt;
+
+        
+&lt;/head&gt;
+&lt;body&gt;
+    
+    
+            &lt;div class=&quot;folium-map&quot; id=&quot;map_e126528f0abeafc8046265f5fe60f2fd&quot; &gt;&lt;/div&gt;
+        
+&lt;/body&gt;
+&lt;script&gt;
+    
+    
+            var map_e126528f0abeafc8046265f5fe60f2fd = L.map(
+                &quot;map_e126528f0abeafc8046265f5fe60f2fd&quot;,
+                {
+                    center: [50.63373, 5.56749],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  &quot;zoom&quot;: 11,
+  &quot;zoomControl&quot;: true,
+  &quot;preferCanvas&quot;: false,
+}
+
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_710148bc3261a933fcc1dbe6c2f9785b = L.tileLayer(
+                &quot;https://tile.openstreetmap.org/{z}/{x}/{y}.png&quot;,
+                {
+  &quot;minZoom&quot;: 0,
+  &quot;maxZoom&quot;: 19,
+  &quot;maxNativeZoom&quot;: 19,
+  &quot;noWrap&quot;: false,
+  &quot;attribution&quot;: &quot;\u0026copy; \u003ca href=\&quot;https://www.openstreetmap.org/copyright\&quot;\u003eOpenStreetMap\u003c/a\u003e contributors&quot;,
+  &quot;subdomains&quot;: &quot;abc&quot;,
+  &quot;detectRetina&quot;: false,
+  &quot;tms&quot;: false,
+  &quot;opacity&quot;: 1,
+}
+
+            );
+        
+    
+            tile_layer_710148bc3261a933fcc1dbe6c2f9785b.addTo(map_e126528f0abeafc8046265f5fe60f2fd);
+        
+    
+            var marker_7d6db4dbb6483cee46ea4fb43ed185ce = L.marker(
+                [50.67465, 5.51316],
+                {
+}
+            ).addTo(map_e126528f0abeafc8046265f5fe60f2fd);
+        
+    
+        var popup_c599cef5862f8d2a63977ea28b528c75 = L.popup({
+  &quot;maxWidth&quot;: &quot;100%&quot;,
+});
+
+        
+            
+                var html_7599f961c6eeb57bfa1c1664a49a655c = $(`&lt;div id=&quot;html_7599f961c6eeb57bfa1c1664a49a655c&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;Alleur (4432)&lt;/div&gt;`)[0];
+                popup_c599cef5862f8d2a63977ea28b528c75.setContent(html_7599f961c6eeb57bfa1c1664a49a655c);
+            
+        
+
+        marker_7d6db4dbb6483cee46ea4fb43ed185ce.bindPopup(popup_c599cef5862f8d2a63977ea28b528c75)
+        ;
+
+        
+    
+    
+            marker_7d6db4dbb6483cee46ea4fb43ed185ce.bindTooltip(
+                `&lt;div&gt;
+                     Alleur (BE)
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var marker_8a36cf9b3564d74a9a8d4a56e8cebcab = L.marker(
+                [50.54829, 5.30974],
+                {
+}
+            ).addTo(map_e126528f0abeafc8046265f5fe60f2fd);
+        
+    
+        var popup_0fb3aa434e1c486416d6865d51df2c2b = L.popup({
+  &quot;maxWidth&quot;: &quot;100%&quot;,
+});
+
+        
+            
+                var html_17a121e45e0148eb6986a63be49dc2c2 = $(`&lt;div id=&quot;html_17a121e45e0148eb6986a63be49dc2c2&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;Amay (4540)&lt;/div&gt;`)[0];
+                popup_0fb3aa434e1c486416d6865d51df2c2b.setContent(html_17a121e45e0148eb6986a63be49dc2c2);
+            
+        
+
+        marker_8a36cf9b3564d74a9a8d4a56e8cebcab.bindPopup(popup_0fb3aa434e1c486416d6865d51df2c2b)
+        ;
+
+        
+    
+    
+            marker_8a36cf9b3564d74a9a8d4a56e8cebcab.bindTooltip(
+                `&lt;div&gt;
+                     Amay (BE)
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var marker_dd97925319e7286065f1037986754079 = L.marker(
+                [50.54153, 5.2779],
+                {
+}
+            ).addTo(map_e126528f0abeafc8046265f5fe60f2fd);
+        
+    
+        var popup_94c15918aa96c1e9cd1d1f478584ae1d = L.popup({
+  &quot;maxWidth&quot;: &quot;100%&quot;,
+});
+
+        
+            
+                var html_0acf5f5225a4b54e2966ac6163db8b05 = $(`&lt;div id=&quot;html_0acf5f5225a4b54e2966ac6163db8b05&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;Ampsin (4540)&lt;/div&gt;`)[0];
+                popup_94c15918aa96c1e9cd1d1f478584ae1d.setContent(html_0acf5f5225a4b54e2966ac6163db8b05);
+            
+        
+
+        marker_dd97925319e7286065f1037986754079.bindPopup(popup_94c15918aa96c1e9cd1d1f478584ae1d)
+        ;
+
+        
+    
+    
+            marker_dd97925319e7286065f1037986754079.bindTooltip(
+                `&lt;div&gt;
+                     Ampsin (BE)
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var marker_b4201df2893122f985d38896e91ae5a1 = L.marker(
+                [50.6623, 5.52029],
+                {
+}
+            ).addTo(map_e126528f0abeafc8046265f5fe60f2fd);
+        
+    
+        var popup_1b75c55e165c3a12699cbf7ccf5f7228 = L.popup({
+  &quot;maxWidth&quot;: &quot;100%&quot;,
+});
+
+        
+            
+                var html_528b2aa15a8103b6e2ea5b352e3e6e3b = $(`&lt;div id=&quot;html_528b2aa15a8103b6e2ea5b352e3e6e3b&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;Ans (4430)&lt;/div&gt;`)[0];
+                popup_1b75c55e165c3a12699cbf7ccf5f7228.setContent(html_528b2aa15a8103b6e2ea5b352e3e6e3b);
+            
+        
+
+        marker_b4201df2893122f985d38896e91ae5a1.bindPopup(popup_1b75c55e165c3a12699cbf7ccf5f7228)
+        ;
+
+        
+    
+    
+            marker_b4201df2893122f985d38896e91ae5a1.bindTooltip(
+                `&lt;div&gt;
+                     Ans (BE)
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var marker_3cc6bf5dec91a6663ec348b7452d9d43 = L.marker(
+                [50.54927, 5.24022],
+                {
+}
+            ).addTo(map_e126528f0abeafc8046265f5fe60f2fd);
+        
+    
+        var popup_e13f119c497bb83c826e288f5d9ed69f = L.popup({
+  &quot;maxWidth&quot;: &quot;100%&quot;,
+});
+
+        
+            
+                var html_1cd90e6ec57fbe5e875cb563db28f5e3 = $(`&lt;div id=&quot;html_1cd90e6ec57fbe5e875cb563db28f5e3&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;Antheit (4520)&lt;/div&gt;`)[0];
+                popup_e13f119c497bb83c826e288f5d9ed69f.setContent(html_1cd90e6ec57fbe5e875cb563db28f5e3);
+            
+        
+
+        marker_3cc6bf5dec91a6663ec348b7452d9d43.bindPopup(popup_e13f119c497bb83c826e288f5d9ed69f)
+        ;
+
+        
+    
+    
+            marker_3cc6bf5dec91a6663ec348b7452d9d43.bindTooltip(
+                `&lt;div&gt;
+                     Antheit (BE)
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var marker_43c4b0f27adaa6d852dc2b26a339fd46 = L.marker(
+                [50.66774, 5.46329],
+                {
+}
+            ).addTo(map_e126528f0abeafc8046265f5fe60f2fd);
+        
+    
+        var popup_f84140b3dc61f230d4b519faf4388e17 = L.popup({
+  &quot;maxWidth&quot;: &quot;100%&quot;,
+});
+
+        
+            
+                var html_bf6e57e0df44066b0b67c1b154e2b7ae = $(`&lt;div id=&quot;html_bf6e57e0df44066b0b67c1b154e2b7ae&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;Awans (4340)&lt;/div&gt;`)[0];
+                popup_f84140b3dc61f230d4b519faf4388e17.setContent(html_bf6e57e0df44066b0b67c1b154e2b7ae);
+            
+        
+
+        marker_43c4b0f27adaa6d852dc2b26a339fd46.bindPopup(popup_f84140b3dc61f230d4b519faf4388e17)
+        ;
+
+        
+    
+    
+            marker_43c4b0f27adaa6d852dc2b26a339fd46.bindTooltip(
+                `&lt;div&gt;
+                     Awans (BE)
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var marker_5f6b2654e0fab5ebec1939210b3d9392 = L.marker(
+                [50.69829, 5.21236],
+                {
+}
+            ).addTo(map_e126528f0abeafc8046265f5fe60f2fd);
+        
+    
+        var popup_f5494e0309e4aa9c86e0c00656c63654 = L.popup({
+  &quot;maxWidth&quot;: &quot;100%&quot;,
+});
+
+        
+            
+                var html_baad18fc893001367fa546529df10a41 = $(`&lt;div id=&quot;html_baad18fc893001367fa546529df10a41&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;Berloz (4257)&lt;/div&gt;`)[0];
+                popup_f5494e0309e4aa9c86e0c00656c63654.setContent(html_baad18fc893001367fa546529df10a41);
+            
+        
+
+        marker_5f6b2654e0fab5ebec1939210b3d9392.bindPopup(popup_f5494e0309e4aa9c86e0c00656c63654)
+        ;
+
+        
+    
+    
+            marker_5f6b2654e0fab5ebec1939210b3d9392.bindTooltip(
+                `&lt;div&gt;
+                     Berloz (BE)
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var marker_b2fb6b23d4a1f562aa123a2ee3875842 = L.marker(
+                [50.62848, 5.14798],
+                {
+}
+            ).addTo(map_e126528f0abeafc8046265f5fe60f2fd);
+        
+    
+        var popup_c8a5082c55636a5cb73af7af0d41c68c = L.popup({
+  &quot;maxWidth&quot;: &quot;100%&quot;,
+});
+
+        
+            
+                var html_428ee00519894328fc16f214689b0760 = $(`&lt;div id=&quot;html_428ee00519894328fc16f214689b0760&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;Braives (4261)&lt;/div&gt;`)[0];
+                popup_c8a5082c55636a5cb73af7af0d41c68c.setContent(html_428ee00519894328fc16f214689b0760);
+            
+        
+
+        marker_b2fb6b23d4a1f562aa123a2ee3875842.bindPopup(popup_c8a5082c55636a5cb73af7af0d41c68c)
+        ;
+
+        
+    
+    
+            marker_b2fb6b23d4a1f562aa123a2ee3875842.bindTooltip(
+                `&lt;div&gt;
+                     Braives (BE)
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var marker_730c9bdbd6256414285b1ed914715c96 = L.marker(
+                [50.71703, 5.39802],
+                {
+}
+            ).addTo(map_e126528f0abeafc8046265f5fe60f2fd);
+        
+    
+        var popup_e48d2ece0bdc619dd80286bb01250f0e = L.popup({
+  &quot;maxWidth&quot;: &quot;100%&quot;,
+});
+
+        
+            
+                var html_1237bdab4818969c0da1a7736c7955df = $(`&lt;div id=&quot;html_1237bdab4818969c0da1a7736c7955df&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;Crisnée (4367)&lt;/div&gt;`)[0];
+                popup_e48d2ece0bdc619dd80286bb01250f0e.setContent(html_1237bdab4818969c0da1a7736c7955df);
+            
+        
+
+        marker_730c9bdbd6256414285b1ed914715c96.bindPopup(popup_e48d2ece0bdc619dd80286bb01250f0e)
+        ;
+
+        
+    
+    
+            marker_730c9bdbd6256414285b1ed914715c96.bindTooltip(
+                `&lt;div&gt;
+                     Crisnée (BE)
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var marker_ab9c1254fbafcab3ca20fe7de4af11e7 = L.marker(
+                [50.64827, 5.32],
+                {
+}
+            ).addTo(map_e126528f0abeafc8046265f5fe60f2fd);
+        
+    
+        var popup_54df875a00d645d73c6269c199843f66 = L.popup({
+  &quot;maxWidth&quot;: &quot;100%&quot;,
+});
+
+        
+            
+                var html_63be4b8fb22d2b28f49fdcaa2960488c = $(`&lt;div id=&quot;html_63be4b8fb22d2b28f49fdcaa2960488c&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;Donceel (4357)&lt;/div&gt;`)[0];
+                popup_54df875a00d645d73c6269c199843f66.setContent(html_63be4b8fb22d2b28f49fdcaa2960488c);
+            
+        
+
+        marker_ab9c1254fbafcab3ca20fe7de4af11e7.bindPopup(popup_54df875a00d645d73c6269c199843f66)
+        ;
+
+        
+    
+    
+            marker_ab9c1254fbafcab3ca20fe7de4af11e7.bindTooltip(
+                `&lt;div&gt;
+                     Donceel (BE)
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var marker_83f63b37805852d37054461281b4e4a1 = L.marker(
+                [50.58156, 5.39916],
+                {
+}
+            ).addTo(map_e126528f0abeafc8046265f5fe60f2fd);
+        
+    
+        var popup_913804ae275740801817de856f50f47a = L.popup({
+  &quot;maxWidth&quot;: &quot;100%&quot;,
+});
+
+        
+            
+                var html_6d02182a1669d969fbf1d3d22195ff05 = $(`&lt;div id=&quot;html_6d02182a1669d969fbf1d3d22195ff05&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;Engis (4480)&lt;/div&gt;`)[0];
+                popup_913804ae275740801817de856f50f47a.setContent(html_6d02182a1669d969fbf1d3d22195ff05);
+            
+        
+
+        marker_83f63b37805852d37054461281b4e4a1.bindPopup(popup_913804ae275740801817de856f50f47a)
+        ;
+
+        
+    
+    
+            marker_83f63b37805852d37054461281b4e4a1.bindTooltip(
+                `&lt;div&gt;
+                     Engis (BE)
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var marker_b2da737d983882dfe6cac2514e9e5478 = L.marker(
+                [50.66252, 5.26005],
+                {
+}
+            ).addTo(map_e126528f0abeafc8046265f5fe60f2fd);
+        
+    
+        var popup_7053d30d560743a1d9cdf3f0ae9a5f29 = L.popup({
+  &quot;maxWidth&quot;: &quot;100%&quot;,
+});
+
+        
+            
+                var html_ce22b28fa46604860d716741915237fc = $(`&lt;div id=&quot;html_ce22b28fa46604860d716741915237fc&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;Faimes (4317)&lt;/div&gt;`)[0];
+                popup_7053d30d560743a1d9cdf3f0ae9a5f29.setContent(html_ce22b28fa46604860d716741915237fc);
+            
+        
+
+        marker_b2da737d983882dfe6cac2514e9e5478.bindPopup(popup_7053d30d560743a1d9cdf3f0ae9a5f29)
+        ;
+
+        
+    
+    
+            marker_b2da737d983882dfe6cac2514e9e5478.bindTooltip(
+                `&lt;div&gt;
+                     Faimes (BE)
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var marker_de648ea79e49172441c232bf97125013 = L.marker(
+                [50.6654, 5.39978],
+                {
+}
+            ).addTo(map_e126528f0abeafc8046265f5fe60f2fd);
+        
+    
+        var popup_5e9b390da35e2de141e9dfc1f056edd0 = L.popup({
+  &quot;maxWidth&quot;: &quot;100%&quot;,
+});
+
+        
+            
+                var html_4d820b3846786dd30cc489081095f5d9 = $(`&lt;div id=&quot;html_4d820b3846786dd30cc489081095f5d9&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;Fexhe-le-Haut-Clocher (4347)&lt;/div&gt;`)[0];
+                popup_5e9b390da35e2de141e9dfc1f056edd0.setContent(html_4d820b3846786dd30cc489081095f5d9);
+            
+        
+
+        marker_de648ea79e49172441c232bf97125013.bindPopup(popup_5e9b390da35e2de141e9dfc1f056edd0)
+        ;
+
+        
+    
+    
+            marker_de648ea79e49172441c232bf97125013.bindTooltip(
+                `&lt;div&gt;
+                     Fexhe-le-Haut-Clocher (BE)
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var marker_90301e785ec8be7e0960d9d8489d4188 = L.marker(
+                [50.60906, 5.47668],
+                {
+}
+            ).addTo(map_e126528f0abeafc8046265f5fe60f2fd);
+        
+    
+        var popup_570814a69f794819e9935cbd8a3440fb = L.popup({
+  &quot;maxWidth&quot;: &quot;100%&quot;,
+});
+
+        
+            
+                var html_8a145945771ee4c9277a82b0cbeb4b02 = $(`&lt;div id=&quot;html_8a145945771ee4c9277a82b0cbeb4b02&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;Flémalle-Grande (4400)&lt;/div&gt;`)[0];
+                popup_570814a69f794819e9935cbd8a3440fb.setContent(html_8a145945771ee4c9277a82b0cbeb4b02);
+            
+        
+
+        marker_90301e785ec8be7e0960d9d8489d4188.bindPopup(popup_570814a69f794819e9935cbd8a3440fb)
+        ;
+
+        
+    
+    
+            marker_90301e785ec8be7e0960d9d8489d4188.bindTooltip(
+                `&lt;div&gt;
+                     Flémalle-Grande (BE)
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var marker_4a884c804e9f9667a8ef5449399c1e5c = L.marker(
+                [50.59994, 5.44471],
+                {
+}
+            ).addTo(map_e126528f0abeafc8046265f5fe60f2fd);
+        
+    
+        var popup_b918c1387f837c8e409e54bd0e65e463 = L.popup({
+  &quot;maxWidth&quot;: &quot;100%&quot;,
+});
+
+        
+            
+                var html_9cac4a1a6eec7fbe92a2307a0eb13583 = $(`&lt;div id=&quot;html_9cac4a1a6eec7fbe92a2307a0eb13583&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;Flémalle-Haute (4400)&lt;/div&gt;`)[0];
+                popup_b918c1387f837c8e409e54bd0e65e463.setContent(html_9cac4a1a6eec7fbe92a2307a0eb13583);
+            
+        
+
+        marker_4a884c804e9f9667a8ef5449399c1e5c.bindPopup(popup_b918c1387f837c8e409e54bd0e65e463)
+        ;
+
+        
+    
+    
+            marker_4a884c804e9f9667a8ef5449399c1e5c.bindTooltip(
+                `&lt;div&gt;
+                     Flémalle-Haute (BE)
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var marker_01c34aac0936687abfdc07feb7fea57d = L.marker(
+                [50.6699, 5.17364],
+                {
+}
+            ).addTo(map_e126528f0abeafc8046265f5fe60f2fd);
+        
+    
+        var popup_18394a3007a3140d998a5237ba923d54 = L.popup({
+  &quot;maxWidth&quot;: &quot;100%&quot;,
+});
+
+        
+            
+                var html_d5742c4724bc003e4fb24b773969ad33 = $(`&lt;div id=&quot;html_d5742c4724bc003e4fb24b773969ad33&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;Geer (4250)&lt;/div&gt;`)[0];
+                popup_18394a3007a3140d998a5237ba923d54.setContent(html_d5742c4724bc003e4fb24b773969ad33);
+            
+        
+
+        marker_01c34aac0936687abfdc07feb7fea57d.bindPopup(popup_18394a3007a3140d998a5237ba923d54)
+        ;
+
+        
+    
+    
+            marker_01c34aac0936687abfdc07feb7fea57d.bindTooltip(
+                `&lt;div&gt;
+                     Geer (BE)
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var marker_ff24578e8da2259487c8bf0f2d019063 = L.marker(
+                [50.64772, 5.5438],
+                {
+}
+            ).addTo(map_e126528f0abeafc8046265f5fe60f2fd);
+        
+    
+        var popup_6e9f9dacc12d75f7f35f46ac537bdc39 = L.popup({
+  &quot;maxWidth&quot;: &quot;100%&quot;,
+});
+
+        
+            
+                var html_941f1ebf0a11b1112a77d2701f8ccd13 = $(`&lt;div id=&quot;html_941f1ebf0a11b1112a77d2701f8ccd13&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;Glain (4000)&lt;/div&gt;`)[0];
+                popup_6e9f9dacc12d75f7f35f46ac537bdc39.setContent(html_941f1ebf0a11b1112a77d2701f8ccd13);
+            
+        
+
+        marker_ff24578e8da2259487c8bf0f2d019063.bindPopup(popup_6e9f9dacc12d75f7f35f46ac537bdc39)
+        ;
+
+        
+    
+    
+            marker_ff24578e8da2259487c8bf0f2d019063.bindTooltip(
+                `&lt;div&gt;
+                     Glain (BE)
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var marker_7d02c9ae4ef8504efee3b868ef166e05 = L.marker(
+                [50.75307, 5.54578],
+                {
+}
+            ).addTo(map_e126528f0abeafc8046265f5fe60f2fd);
+        
+    
+        var popup_05d2ba91156651dc89a6cffe7d1357a4 = L.popup({
+  &quot;maxWidth&quot;: &quot;100%&quot;,
+});
+
+        
+            
+                var html_d8e095a6a6fd1d83671b5889885cc103 = $(`&lt;div id=&quot;html_d8e095a6a6fd1d83671b5889885cc103&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;Glons (4690)&lt;/div&gt;`)[0];
+                popup_05d2ba91156651dc89a6cffe7d1357a4.setContent(html_d8e095a6a6fd1d83671b5889885cc103);
+            
+        
+
+        marker_7d02c9ae4ef8504efee3b868ef166e05.bindPopup(popup_05d2ba91156651dc89a6cffe7d1357a4)
+        ;
+
+        
+    
+    
+            marker_7d02c9ae4ef8504efee3b868ef166e05.bindTooltip(
+                `&lt;div&gt;
+                     Glons (BE)
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var marker_8d15e4b154861874814c41cdb4160a8b = L.marker(
+                [50.64032, 5.50329],
+                {
+}
+            ).addTo(map_e126528f0abeafc8046265f5fe60f2fd);
+        
+    
+        var popup_3ae27d26e95a516c728d78eba8a6482c = L.popup({
+  &quot;maxWidth&quot;: &quot;100%&quot;,
+});
+
+        
+            
+                var html_e24188e3c273d219b5b8ba2a6b1280d6 = $(`&lt;div id=&quot;html_e24188e3c273d219b5b8ba2a6b1280d6&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;Grâce-Berleur (4460)&lt;/div&gt;`)[0];
+                popup_3ae27d26e95a516c728d78eba8a6482c.setContent(html_e24188e3c273d219b5b8ba2a6b1280d6);
+            
+        
+
+        marker_8d15e4b154861874814c41cdb4160a8b.bindPopup(popup_3ae27d26e95a516c728d78eba8a6482c)
+        ;
+
+        
+    
+    
+            marker_8d15e4b154861874814c41cdb4160a8b.bindTooltip(
+                `&lt;div&gt;
+                     Grâce-Berleur (BE)
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var marker_c3c5999438d103b517bf93ae5c7bcfa6 = L.marker(
+                [50.64059, 5.47179],
+                {
+}
+            ).addTo(map_e126528f0abeafc8046265f5fe60f2fd);
+        
+    
+        var popup_7a2b9787b716748fa1cdf0af5e1d9b2d = L.popup({
+  &quot;maxWidth&quot;: &quot;100%&quot;,
+});
+
+        
+            
+                var html_33b1b0e2264a6fcc5433b86c2497903b = $(`&lt;div id=&quot;html_33b1b0e2264a6fcc5433b86c2497903b&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;Hollogne-aux-Pierres (4460)&lt;/div&gt;`)[0];
+                popup_7a2b9787b716748fa1cdf0af5e1d9b2d.setContent(html_33b1b0e2264a6fcc5433b86c2497903b);
+            
+        
+
+        marker_c3c5999438d103b517bf93ae5c7bcfa6.bindPopup(popup_7a2b9787b716748fa1cdf0af5e1d9b2d)
+        ;
+
+        
+    
+    
+            marker_c3c5999438d103b517bf93ae5c7bcfa6.bindTooltip(
+                `&lt;div&gt;
+                     Hollogne-aux-Pierres (BE)
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var marker_0693126af2ace653b979a4f3f2653b67 = L.marker(
+                [50.51894, 5.23284],
+                {
+}
+            ).addTo(map_e126528f0abeafc8046265f5fe60f2fd);
+        
+    
+        var popup_f721f6469eb0b40954a3da72e22e07f5 = L.popup({
+  &quot;maxWidth&quot;: &quot;100%&quot;,
+});
+
+        
+            
+                var html_53fdca83e682b532988036e6247a8020 = $(`&lt;div id=&quot;html_53fdca83e682b532988036e6247a8020&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;Huy (4500)&lt;/div&gt;`)[0];
+                popup_f721f6469eb0b40954a3da72e22e07f5.setContent(html_53fdca83e682b532988036e6247a8020);
+            
+        
+
+        marker_0693126af2ace653b979a4f3f2653b67.bindPopup(popup_f721f6469eb0b40954a3da72e22e07f5)
+        ;
+
+        
+    
+    
+            marker_0693126af2ace653b979a4f3f2653b67.bindTooltip(
+                `&lt;div&gt;
+                     Huy (BE)
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var marker_d5cd11f7e15577cdc5b99f29779a7799 = L.marker(
+                [50.58798, 5.4657],
+                {
+}
+            ).addTo(map_e126528f0abeafc8046265f5fe60f2fd);
+        
+    
+        var popup_f3454b3912b1f87ff84e343bd7cfe2ba = L.popup({
+  &quot;maxWidth&quot;: &quot;100%&quot;,
+});
+
+        
+            
+                var html_790332c1a172ffda85beb6965e6525de = $(`&lt;div id=&quot;html_790332c1a172ffda85beb6965e6525de&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;Ivoz-Ramet (4400)&lt;/div&gt;`)[0];
+                popup_f3454b3912b1f87ff84e343bd7cfe2ba.setContent(html_790332c1a172ffda85beb6965e6525de);
+            
+        
+
+        marker_d5cd11f7e15577cdc5b99f29779a7799.bindPopup(popup_f3454b3912b1f87ff84e343bd7cfe2ba)
+        ;
+
+        
+    
+    
+            marker_d5cd11f7e15577cdc5b99f29779a7799.bindTooltip(
+                `&lt;div&gt;
+                     Ivoz-Ramet (BE)
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var marker_91dd0b4ed55e17caf03614bdcb5deb98 = L.marker(
+                [50.61701, 5.49849],
+                {
+}
+            ).addTo(map_e126528f0abeafc8046265f5fe60f2fd);
+        
+    
+        var popup_d22e0c10c07f1b0a000c86f8b79e981a = L.popup({
+  &quot;maxWidth&quot;: &quot;100%&quot;,
+});
+
+        
+            
+                var html_1b3d431633bb6bb2e254c7d7a994635a = $(`&lt;div id=&quot;html_1b3d431633bb6bb2e254c7d7a994635a&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;Jemeppe-sur-Meuse (4101)&lt;/div&gt;`)[0];
+                popup_d22e0c10c07f1b0a000c86f8b79e981a.setContent(html_1b3d431633bb6bb2e254c7d7a994635a);
+            
+        
+
+        marker_91dd0b4ed55e17caf03614bdcb5deb98.bindPopup(popup_d22e0c10c07f1b0a000c86f8b79e981a)
+        ;
+
+        
+    
+    
+            marker_91dd0b4ed55e17caf03614bdcb5deb98.bindTooltip(
+                `&lt;div&gt;
+                     Jemeppe-sur-Meuse (BE)
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var marker_6e64ca2c3709e98dbd565a2d25c6597f = L.marker(
+                [50.7076, 5.53127],
+                {
+}
+            ).addTo(map_e126528f0abeafc8046265f5fe60f2fd);
+        
+    
+        var popup_9ce1cc416c78494c24e725e5596ecafe = L.popup({
+  &quot;maxWidth&quot;: &quot;100%&quot;,
+});
+
+        
+            
+                var html_aeb6a603faa1ecf12538f351ec136338 = $(`&lt;div id=&quot;html_aeb6a603faa1ecf12538f351ec136338&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;Juprelle (4450)&lt;/div&gt;`)[0];
+                popup_9ce1cc416c78494c24e725e5596ecafe.setContent(html_aeb6a603faa1ecf12538f351ec136338);
+            
+        
+
+        marker_6e64ca2c3709e98dbd565a2d25c6597f.bindPopup(popup_9ce1cc416c78494c24e725e5596ecafe)
+        ;
+
+        
+    
+    
+            marker_6e64ca2c3709e98dbd565a2d25c6597f.bindTooltip(
+                `&lt;div&gt;
+                     Juprelle (BE)
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var marker_d65f5e73fc22964946b670395f515c90 = L.marker(
+                [50.72162, 5.35086],
+                {
+}
+            ).addTo(map_e126528f0abeafc8046265f5fe60f2fd);
+        
+    
+        var popup_ca034a765794978caeda1c00dde4d3b2 = L.popup({
+  &quot;maxWidth&quot;: &quot;100%&quot;,
+});
+
+        
+            
+                var html_6df17914f050e9f192ce8638500ed4f8 = $(`&lt;div id=&quot;html_6df17914f050e9f192ce8638500ed4f8&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;Lens-sur-Geer (4360)&lt;/div&gt;`)[0];
+                popup_ca034a765794978caeda1c00dde4d3b2.setContent(html_6df17914f050e9f192ce8638500ed4f8);
+            
+        
+
+        marker_d65f5e73fc22964946b670395f515c90.bindPopup(popup_ca034a765794978caeda1c00dde4d3b2)
+        ;
+
+        
+    
+    
+            marker_d65f5e73fc22964946b670395f515c90.bindTooltip(
+                `&lt;div&gt;
+                     Lens-sur-Geer (BE)
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var marker_6bfb63e3f1e5e56b6888acfe2025e4c8 = L.marker(
+                [50.63373, 5.56749],
+                {
+}
+            ).addTo(map_e126528f0abeafc8046265f5fe60f2fd);
+        
+    
+        var popup_0e443de7863b7f6246fe703a4fb774e4 = L.popup({
+  &quot;maxWidth&quot;: &quot;100%&quot;,
+});
+
+        
+            
+                var html_e48b30e3a3e845255a8f262b84192dd9 = $(`&lt;div id=&quot;html_e48b30e3a3e845255a8f262b84192dd9&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;Liège (4020)&lt;/div&gt;`)[0];
+                popup_0e443de7863b7f6246fe703a4fb774e4.setContent(html_e48b30e3a3e845255a8f262b84192dd9);
+            
+        
+
+        marker_6bfb63e3f1e5e56b6888acfe2025e4c8.bindPopup(popup_0e443de7863b7f6246fe703a4fb774e4)
+        ;
+
+        
+    
+    
+            marker_6bfb63e3f1e5e56b6888acfe2025e4c8.bindTooltip(
+                `&lt;div&gt;
+                     Liège (BE)
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var marker_5e639a8b7a5cc43fa9bcff4178fbf752 = L.marker(
+                [50.66655, 5.50509],
+                {
+}
+            ).addTo(map_e126528f0abeafc8046265f5fe60f2fd);
+        
+    
+        var popup_3f3411e46482ea5d68a280756105119c = L.popup({
+  &quot;maxWidth&quot;: &quot;100%&quot;,
+});
+
+        
+            
+                var html_526f325a09d5dce7b68fdf0766f642fa = $(`&lt;div id=&quot;html_526f325a09d5dce7b68fdf0766f642fa&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;Loncin (4431)&lt;/div&gt;`)[0];
+                popup_3f3411e46482ea5d68a280756105119c.setContent(html_526f325a09d5dce7b68fdf0766f642fa);
+            
+        
+
+        marker_5e639a8b7a5cc43fa9bcff4178fbf752.bindPopup(popup_3f3411e46482ea5d68a280756105119c)
+        ;
+
+        
+    
+    
+            marker_5e639a8b7a5cc43fa9bcff4178fbf752.bindTooltip(
+                `&lt;div&gt;
+                     Loncin (BE)
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var marker_f5f827b5b4b58d3d1ba56bc61b1bcd93 = L.marker(
+                [50.46707, 5.2428],
+                {
+}
+            ).addTo(map_e126528f0abeafc8046265f5fe60f2fd);
+        
+    
+        var popup_ebdce73d4273bae3ae4c88e63a81990a = L.popup({
+  &quot;maxWidth&quot;: &quot;100%&quot;,
+});
+
+        
+            
+                var html_2e31b3292ea2b2582c74d0d8fe795513 = $(`&lt;div id=&quot;html_2e31b3292ea2b2582c74d0d8fe795513&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;Marchin (4570)&lt;/div&gt;`)[0];
+                popup_ebdce73d4273bae3ae4c88e63a81990a.setContent(html_2e31b3292ea2b2582c74d0d8fe795513);
+            
+        
+
+        marker_f5f827b5b4b58d3d1ba56bc61b1bcd93.bindPopup(popup_ebdce73d4273bae3ae4c88e63a81990a)
+        ;
+
+        
+    
+    
+            marker_f5f827b5b4b58d3d1ba56bc61b1bcd93.bindTooltip(
+                `&lt;div&gt;
+                     Marchin (BE)
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var marker_df11587cf7a327ec54d50903eb3d42d3 = L.marker(
+                [50.62306, 5.45626],
+                {
+}
+            ).addTo(map_e126528f0abeafc8046265f5fe60f2fd);
+        
+    
+        var popup_141bd8d86440e58e92356a565a166519 = L.popup({
+  &quot;maxWidth&quot;: &quot;100%&quot;,
+});
+
+        
+            
+                var html_675989660108e674c1dac78cdd416b49 = $(`&lt;div id=&quot;html_675989660108e674c1dac78cdd416b49&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;Mons-lez-Liège (4400)&lt;/div&gt;`)[0];
+                popup_141bd8d86440e58e92356a565a166519.setContent(html_675989660108e674c1dac78cdd416b49);
+            
+        
+
+        marker_df11587cf7a327ec54d50903eb3d42d3.bindPopup(popup_141bd8d86440e58e92356a565a166519)
+        ;
+
+        
+    
+    
+            marker_df11587cf7a327ec54d50903eb3d42d3.bindTooltip(
+                `&lt;div&gt;
+                     Mons-lez-Liège (BE)
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var marker_3106835c0b749f819d27889a96441527 = L.marker(
+                [50.64576, 5.51411],
+                {
+}
+            ).addTo(map_e126528f0abeafc8046265f5fe60f2fd);
+        
+    
+        var popup_70b0beba16f1ba373e5a634522ec3093 = L.popup({
+  &quot;maxWidth&quot;: &quot;100%&quot;,
+});
+
+        
+            
+                var html_ea82fca74b3a4cdcac604feb1bdf8910 = $(`&lt;div id=&quot;html_ea82fca74b3a4cdcac604feb1bdf8910&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;Montegnée (4420)&lt;/div&gt;`)[0];
+                popup_70b0beba16f1ba373e5a634522ec3093.setContent(html_ea82fca74b3a4cdcac604feb1bdf8910);
+            
+        
+
+        marker_3106835c0b749f819d27889a96441527.bindPopup(popup_70b0beba16f1ba373e5a634522ec3093)
+        ;
+
+        
+    
+    
+            marker_3106835c0b749f819d27889a96441527.bindTooltip(
+                `&lt;div&gt;
+                     Montegnée (BE)
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var marker_70893d7f3daadd24a85c2efa5035516b = L.marker(
+                [50.73187, 5.35818],
+                {
+}
+            ).addTo(map_e126528f0abeafc8046265f5fe60f2fd);
+        
+    
+        var popup_de90b33f7590faf7edc0834fd3dc8207 = L.popup({
+  &quot;maxWidth&quot;: &quot;100%&quot;,
+});
+
+        
+            
+                var html_85641c2ad7386af172abe7a61fd22687 = $(`&lt;div id=&quot;html_85641c2ad7386af172abe7a61fd22687&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;Oreye (4360)&lt;/div&gt;`)[0];
+                popup_de90b33f7590faf7edc0834fd3dc8207.setContent(html_85641c2ad7386af172abe7a61fd22687);
+            
+        
+
+        marker_70893d7f3daadd24a85c2efa5035516b.bindPopup(popup_de90b33f7590faf7edc0834fd3dc8207)
+        ;
+
+        
+    
+    
+            marker_70893d7f3daadd24a85c2efa5035516b.bindTooltip(
+                `&lt;div&gt;
+                     Oreye (BE)
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var marker_0f8fa7a08d4b7d4f95749f1925778915 = L.marker(
+                [50.68069, 5.32785],
+                {
+}
+            ).addTo(map_e126528f0abeafc8046265f5fe60f2fd);
+        
+    
+        var popup_eb31d833a7f271b5822530867a52e0e3 = L.popup({
+  &quot;maxWidth&quot;: &quot;100%&quot;,
+});
+
+        
+            
+                var html_d78fe926566a7257b2831a246076e08a = $(`&lt;div id=&quot;html_d78fe926566a7257b2831a246076e08a&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;Remicourt (4350)&lt;/div&gt;`)[0];
+                popup_eb31d833a7f271b5822530867a52e0e3.setContent(html_d78fe926566a7257b2831a246076e08a);
+            
+        
+
+        marker_0f8fa7a08d4b7d4f95749f1925778915.bindPopup(popup_eb31d833a7f271b5822530867a52e0e3)
+        ;
+
+        
+    
+    
+            marker_0f8fa7a08d4b7d4f95749f1925778915.bindTooltip(
+                `&lt;div&gt;
+                     Remicourt (BE)
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var marker_80354a0cd097e8fde9dd22735c09afad = L.marker(
+                [50.67579, 5.54621],
+                {
+}
+            ).addTo(map_e126528f0abeafc8046265f5fe60f2fd);
+        
+    
+        var popup_520cab612f61c7a39d773c854d4908a8 = L.popup({
+  &quot;maxWidth&quot;: &quot;100%&quot;,
+});
+
+        
+            
+                var html_84961784fd72b7fbf93e1aaa380cbca5 = $(`&lt;div id=&quot;html_84961784fd72b7fbf93e1aaa380cbca5&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;Rocourt (4000)&lt;/div&gt;`)[0];
+                popup_520cab612f61c7a39d773c854d4908a8.setContent(html_84961784fd72b7fbf93e1aaa380cbca5);
+            
+        
+
+        marker_80354a0cd097e8fde9dd22735c09afad.bindPopup(popup_520cab612f61c7a39d773c854d4908a8)
+        ;
+
+        
+    
+    
+            marker_80354a0cd097e8fde9dd22735c09afad.bindTooltip(
+                `&lt;div&gt;
+                     Rocourt (BE)
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var marker_841b90f965345d6b7be5215cdf13535b = L.marker(
+                [50.60007, 5.3574],
+                {
+}
+            ).addTo(map_e126528f0abeafc8046265f5fe60f2fd);
+        
+    
+        var popup_c5c73a3776fcc5b0f489f3c0c9f01a7f = L.popup({
+  &quot;maxWidth&quot;: &quot;100%&quot;,
+});
+
+        
+            
+                var html_8c19b23b2572a660b04d004313e41834 = $(`&lt;div id=&quot;html_8c19b23b2572a660b04d004313e41834&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;Saint-Georges-sur-Meuse (4470)&lt;/div&gt;`)[0];
+                popup_c5c73a3776fcc5b0f489f3c0c9f01a7f.setContent(html_8c19b23b2572a660b04d004313e41834);
+            
+        
+
+        marker_841b90f965345d6b7be5215cdf13535b.bindPopup(popup_c5c73a3776fcc5b0f489f3c0c9f01a7f)
+        ;
+
+        
+    
+    
+            marker_841b90f965345d6b7be5215cdf13535b.bindTooltip(
+                `&lt;div&gt;
+                     Saint-Georges-sur-Meuse (BE)
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var marker_8bded9396820133ddbe61a21d5647e53 = L.marker(
+                [50.62837, 5.53243],
+                {
+}
+            ).addTo(map_e126528f0abeafc8046265f5fe60f2fd);
+        
+    
+        var popup_48bb6bfa6c63fcd513a150ba0dbc480d = L.popup({
+  &quot;maxWidth&quot;: &quot;100%&quot;,
+});
+
+        
+            
+                var html_566e8f270c228d40db8415d6cf961064 = $(`&lt;div id=&quot;html_566e8f270c228d40db8415d6cf961064&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;Saint-Nicolas (4420)&lt;/div&gt;`)[0];
+                popup_48bb6bfa6c63fcd513a150ba0dbc480d.setContent(html_566e8f270c228d40db8415d6cf961064);
+            
+        
+
+        marker_8bded9396820133ddbe61a21d5647e53.bindPopup(popup_48bb6bfa6c63fcd513a150ba0dbc480d)
+        ;
+
+        
+    
+    
+            marker_8bded9396820133ddbe61a21d5647e53.bindTooltip(
+                `&lt;div&gt;
+                     Saint-Nicolas (BE)
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var marker_7a33e1dbe4b66b898408c28919c374f1 = L.marker(
+                [50.52974, 5.26176],
+                {
+}
+            ).addTo(map_e126528f0abeafc8046265f5fe60f2fd);
+        
+    
+        var popup_8099113903064fc4a6419883cb5c10e3 = L.popup({
+  &quot;maxWidth&quot;: &quot;100%&quot;,
+});
+
+        
+            
+                var html_ba0fbd9f9b452970321fbde963c38866 = $(`&lt;div id=&quot;html_ba0fbd9f9b452970321fbde963c38866&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;Tihange (4500)&lt;/div&gt;`)[0];
+                popup_8099113903064fc4a6419883cb5c10e3.setContent(html_ba0fbd9f9b452970321fbde963c38866);
+            
+        
+
+        marker_7a33e1dbe4b66b898408c28919c374f1.bindPopup(popup_8099113903064fc4a6419883cb5c10e3)
+        ;
+
+        
+    
+    
+            marker_7a33e1dbe4b66b898408c28919c374f1.bindTooltip(
+                `&lt;div&gt;
+                     Tihange (BE)
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var marker_dbf614a92c20db743c06ea84aec79a44 = L.marker(
+                [50.61805, 5.54277],
+                {
+}
+            ).addTo(map_e126528f0abeafc8046265f5fe60f2fd);
+        
+    
+        var popup_960df9197179c3aa84ea686b1e6181d0 = L.popup({
+  &quot;maxWidth&quot;: &quot;100%&quot;,
+});
+
+        
+            
+                var html_cc7a6e4fb39aabbf11af52c8cf2daf61 = $(`&lt;div id=&quot;html_cc7a6e4fb39aabbf11af52c8cf2daf61&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;Tilleur (4420)&lt;/div&gt;`)[0];
+                popup_960df9197179c3aa84ea686b1e6181d0.setContent(html_cc7a6e4fb39aabbf11af52c8cf2daf61);
+            
+        
+
+        marker_dbf614a92c20db743c06ea84aec79a44.bindPopup(popup_960df9197179c3aa84ea686b1e6181d0)
+        ;
+
+        
+    
+    
+            marker_dbf614a92c20db743c06ea84aec79a44.bindTooltip(
+                `&lt;div&gt;
+                     Tilleur (BE)
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var marker_a38a56da4628b99d05721733a758c5a1 = L.marker(
+                [50.60743, 5.3174],
+                {
+}
+            ).addTo(map_e126528f0abeafc8046265f5fe60f2fd);
+        
+    
+        var popup_5f28c0005ea040cdecd24078687b571e = L.popup({
+  &quot;maxWidth&quot;: &quot;100%&quot;,
+});
+
+        
+            
+                var html_e322f94c98fdd02b0028de38dbbcc405 = $(`&lt;div id=&quot;html_e322f94c98fdd02b0028de38dbbcc405&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;Verlaine (4537)&lt;/div&gt;`)[0];
+                popup_5f28c0005ea040cdecd24078687b571e.setContent(html_e322f94c98fdd02b0028de38dbbcc405);
+            
+        
+
+        marker_a38a56da4628b99d05721733a758c5a1.bindPopup(popup_5f28c0005ea040cdecd24078687b571e)
+        ;
+
+        
+    
+    
+            marker_a38a56da4628b99d05721733a758c5a1.bindTooltip(
+                `&lt;div&gt;
+                     Verlaine (BE)
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var marker_eb1b631b224a2ada8a2668df198586a2 = L.marker(
+                [50.57708, 5.25945],
+                {
+}
+            ).addTo(map_e126528f0abeafc8046265f5fe60f2fd);
+        
+    
+        var popup_bc07bac633c310c934d0708e526e8d3f = L.popup({
+  &quot;maxWidth&quot;: &quot;100%&quot;,
+});
+
+        
+            
+                var html_77ecc0ec2c9137d0a0b2bb25e519826a = $(`&lt;div id=&quot;html_77ecc0ec2c9137d0a0b2bb25e519826a&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;Villers-le-Bouillet (4530)&lt;/div&gt;`)[0];
+                popup_bc07bac633c310c934d0708e526e8d3f.setContent(html_77ecc0ec2c9137d0a0b2bb25e519826a);
+            
+        
+
+        marker_eb1b631b224a2ada8a2668df198586a2.bindPopup(popup_bc07bac633c310c934d0708e526e8d3f)
+        ;
+
+        
+    
+    
+            marker_eb1b631b224a2ada8a2668df198586a2.bindTooltip(
+                `&lt;div&gt;
+                     Villers-le-Bouillet (BE)
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var marker_b2baf5aa5400e7623310a6c5a2d16a8d = L.marker(
+                [50.53907, 5.20846],
+                {
+}
+            ).addTo(map_e126528f0abeafc8046265f5fe60f2fd);
+        
+    
+        var popup_30c9b23801da0f3e7ae4467692e296de = L.popup({
+  &quot;maxWidth&quot;: &quot;100%&quot;,
+});
+
+        
+            
+                var html_9d6be20cc5678f4e4fa108d8d22f7efc = $(`&lt;div id=&quot;html_9d6be20cc5678f4e4fa108d8d22f7efc&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;Wanze (4520)&lt;/div&gt;`)[0];
+                popup_30c9b23801da0f3e7ae4467692e296de.setContent(html_9d6be20cc5678f4e4fa108d8d22f7efc);
+            
+        
+
+        marker_b2baf5aa5400e7623310a6c5a2d16a8d.bindPopup(popup_30c9b23801da0f3e7ae4467692e296de)
+        ;
+
+        
+    
+    
+            marker_b2baf5aa5400e7623310a6c5a2d16a8d.bindTooltip(
+                `&lt;div&gt;
+                     Wanze (BE)
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+    
+            var marker_a6fe27468a4b84d6cdc86ff69f3fee48 = L.marker(
+                [50.6976, 5.25524],
+                {
+}
+            ).addTo(map_e126528f0abeafc8046265f5fe60f2fd);
+        
+    
+        var popup_d25a270cb10a995f30eb548845187091 = L.popup({
+  &quot;maxWidth&quot;: &quot;100%&quot;,
+});
+
+        
+            
+                var html_e6014f7606a573774bbbbe45a9a93adf = $(`&lt;div id=&quot;html_e6014f7606a573774bbbbe45a9a93adf&quot; style=&quot;width: 100.0%; height: 100.0%;&quot;&gt;Waremme (4300)&lt;/div&gt;`)[0];
+                popup_d25a270cb10a995f30eb548845187091.setContent(html_e6014f7606a573774bbbbe45a9a93adf);
+            
+        
+
+        marker_a6fe27468a4b84d6cdc86ff69f3fee48.bindPopup(popup_d25a270cb10a995f30eb548845187091)
+        ;
+
+        
+    
+    
+            marker_a6fe27468a4b84d6cdc86ff69f3fee48.bindTooltip(
+                `&lt;div&gt;
+                     Waremme (BE)
+                 &lt;/div&gt;`,
+                {
+  &quot;sticky&quot;: true,
+}
+            );
+        
+&lt;/script&gt;
+&lt;/html&gt;" style="position:absolute;width:100%;height:100%;left:0;top:0;border:none !important;" allowfullscreen webkitallowfullscreen mozallowfullscreen></iframe></div></div>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>

@@ -17,7 +17,7 @@ from generate_urls import (
     generate_trevi_city_url,
 )
 
-OUTPUT_FILE = "index.html"
+OUTPUT_FILE = "./docs/index.html"
 CITIES_FILE = "cities.json"
 TEMPLATE_DIR = Path(__file__).parent / "templates"
 TEMPLATE_FILE = "search.html"

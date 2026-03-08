@@ -35,6 +35,6 @@ echo ""
 
 # Open results in browser
 echo "Opening results in browser..."
-open index.html
+open ./docs/index.html
 
 echo "=== Done ==="
