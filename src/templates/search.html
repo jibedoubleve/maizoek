@@ -17,6 +17,9 @@
             --color-trevi: #c0392b;
             --color-trevi-hover: #96281b;
             --color-trevi-light: #fbeaea;
+            --color-immovlan: #e07b00;
+            --color-immovlan-hover: #b56200;
+            --color-immovlan-light: #fff3e0;
             --color-tag-bg: #f3f4f6;
             --color-tag-text: #374151;
             --radius: 10px;
@@ -195,6 +198,11 @@
             color: #fff;
         }
         .search-btn-trevi:hover { background: var(--color-trevi-hover); }
+        .search-btn-immovlan {
+            background: var(--color-immovlan);
+            color: #fff;
+        }
+        .search-btn-immovlan:hover { background: var(--color-immovlan-hover); }
         .btn-logo {
             width: 22px;
             height: 22px;
@@ -286,6 +294,10 @@
         .city-link-trevi {
             background: var(--color-trevi-light);
             color: var(--color-trevi);
+        }
+        .city-link-immovlan {
+            background: var(--color-immovlan-light);
+            color: var(--color-immovlan);
         }
 
         /* ── Map ── */
@@ -421,6 +433,10 @@
                 <span class="btn-logo">tr</span>
                 {{ t.search_button_trevi }}
             </a>
+            <a href="{{ immovlan_combined_url }}" target="_blank" class="search-btn search-btn-immovlan">
+                <span class="btn-logo">iv</span>
+                {{ t.search_button_immovlan }}
+            </a>
         </div>
 
         <!-- Cities list -->
@@ -437,6 +453,7 @@
                     <div class="city-links">
                         <a href="{{ city.immoweb_url }}" target="_blank" class="city-link city-link-immoweb">Immoweb</a>
                         <a href="{{ city.trevi_url }}" target="_blank" class="city-link city-link-trevi">Trevi</a>
+                        {% if city.immovlan_url %}<a href="{{ city.immovlan_url }}" target="_blank" class="city-link city-link-immovlan">Immovlan</a>{% endif %}
                     </div>
                 </li>
                 {% endfor %}

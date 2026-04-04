@@ -13,8 +13,10 @@ from generate_urls import (
     fetch_postal_code,
     generate_combined_url,
     generate_trevi_combined_url,
+    generate_immovlan_combined_url,
     generate_city_url,
     generate_trevi_city_url,
+    generate_immovlan_city_url,
 )
 
 OUTPUT_FILE = "./docs/index.html"
@@ -85,6 +87,7 @@ def main():
     # Generate combined URLs
     combined_url = generate_combined_url(unique_postal_codes, config)
     trevi_combined_url = generate_trevi_combined_url(city_postal_map, config)
+    immovlan_combined_url = generate_immovlan_combined_url(city_postal_map, config)
 
     print(f"Generated URLs for {len(unique_postal_codes)} postal codes")
     print()
@@ -99,6 +102,7 @@ def main():
             "postal": postal or "?",
             "immoweb_url": generate_city_url(city_name, config),
             "trevi_url": generate_trevi_city_url(city_name, postal, config) if postal else None,
+            "immovlan_url": generate_immovlan_city_url(city_name, postal, config) if postal else None,
         })
 
     # Create the map centered on the main city
@@ -126,6 +130,7 @@ def main():
     complete_html = template.render(
         combined_url=combined_url,
         trevi_combined_url=trevi_combined_url,
+        immovlan_combined_url=immovlan_combined_url,
         cities=cities_data,
         map_html=map_html,
         address=address,

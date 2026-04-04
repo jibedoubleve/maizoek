@@ -12,6 +12,7 @@ CONFIG_FILE = "query_params.json"
 # URLs
 IMMOWEB_BASE_URL = "https://www.immoweb.be/en/search"
 TREVI_BASE_URL = "https://www.trevi.be/fr/acheter-bien-immobilier"
+IMMOVLAN_BASE_URL = "https://immovlan.be/fr/immobilier"
 GEONAMES_API_URL = "http://api.geonames.org/findNearbyPostalCodesJSON"
 
 # Trevi mappings derived from shared immoweb config values
@@ -26,6 +27,26 @@ TREVI_PROPERTY_PATH_MAP = {
 TREVI_PROPERTY_CATEGORY_MAP = {
     "house": 1,
     "apartment": 2,
+}
+
+# Immovlan mappings
+IMMOVLAN_TRANSACTION_MAP = {
+    "for-sale": "a-vendre,en-vente-publique",
+    "for-rent": "a-louer",
+}
+IMMOVLAN_PROPERTY_TYPE_MAP = {
+    "house": "maison",
+    "apartment": "appartement",
+}
+IMMOVLAN_SUBTYPE_MAP = {
+    "HOUSE": ["maison"],
+    "VILLA": ["villa"],
+    "MANSION": ["maison-de-maitre"],
+    "MANOR_HOUSE": ["maison-de-maitre", "fermette"],
+    "CHALET": ["chalet"],
+    "CASTLE": ["chateau"],
+    "BUNGALOW": ["bungalow"],
+    # FARMHOUSE, EXCEPTIONAL_PROPERTY, TOWN_HOUSE, COUNTRY_COTTAGE, PAVILION: no equivalent
 }
 
 
@@ -191,6 +212,118 @@ def generate_trevi_combined_url(city_postal_map, config):
 
     query_string = urllib.parse.urlencode(params, quote_via=urllib.parse.quote)
     return f"{TREVI_BASE_URL}/{path_segment}?{query_string}"
+
+
+def generate_immovlan_combined_url(city_postal_map, config):
+    """
+    Generate a single Immovlan URL covering all cities using towns parameter.
+    Format: towns={postalcode}-{cityname},{postalcode}-{cityname},...
+
+    Args:
+        city_postal_map: Dict mapping city name -> postal code
+        config: Configuration dictionary
+
+    Returns:
+        Combined Immovlan search URL
+    """
+    immoweb = config.get("immoweb", {})
+    transaction = immoweb.get("transaction", "for-sale")
+    property_type = immoweb.get("property_type", "house")
+
+    params = [
+        ("transactiontypes", IMMOVLAN_TRANSACTION_MAP.get(transaction, "a-vendre,en-vente-publique")),
+        ("propertytypes", IMMOVLAN_PROPERTY_TYPE_MAP.get(property_type, "maison")),
+    ]
+
+    # Map subtypes
+    immovlan_subtypes = []
+    for subtype in immoweb.get("property_subtypes", []):
+        immovlan_subtypes.extend(IMMOVLAN_SUBTYPE_MAP.get(subtype, []))
+    # Deduplicate while preserving order
+    seen = set()
+    immovlan_subtypes = [s for s in immovlan_subtypes if not (s in seen or seen.add(s))]
+    if immovlan_subtypes:
+        params.append(("propertysubtypes", ",".join(immovlan_subtypes)))
+
+    # Towns: {postalcode}-{cityname-lowercase-hyphenated}
+    towns = [
+        f"{postal}-{name.lower().replace(' ', '-')}"
+        for name, postal in city_postal_map.items()
+    ]
+    if towns:
+        params.append(("towns", ",".join(towns)))
+
+    min_price = immoweb.get("min_price")
+    if min_price is not None:
+        params.append(("minprice", min_price))
+
+    max_price = immoweb.get("max_price")
+    if max_price is not None:
+        params.append(("maxprice", max_price))
+
+    min_bedrooms = immoweb.get("min_bedrooms")
+    if min_bedrooms is not None:
+        params.append(("minbedrooms", min_bedrooms))
+
+    max_bedrooms = immoweb.get("max_bedrooms")
+    if max_bedrooms is not None:
+        params.append(("maxbedrooms", max_bedrooms))
+
+    query_string = urllib.parse.urlencode(params, quote_via=urllib.parse.quote)
+    return f"{IMMOVLAN_BASE_URL}?{query_string}"
+
+
+def generate_immovlan_city_url(city_name, postal_code, config):
+    """
+    Generate an Immovlan search URL for a single city.
+
+    Args:
+        city_name: City name
+        postal_code: Postal code for the city
+        config: Configuration dictionary
+
+    Returns:
+        Immovlan search URL for the city
+    """
+    immoweb = config.get("immoweb", {})
+    transaction = immoweb.get("transaction", "for-sale")
+    property_type = immoweb.get("property_type", "house")
+
+    params = [
+        ("transactiontypes", IMMOVLAN_TRANSACTION_MAP.get(transaction, "a-vendre,en-vente-publique")),
+        ("propertytypes", IMMOVLAN_PROPERTY_TYPE_MAP.get(property_type, "maison")),
+    ]
+
+    immovlan_subtypes = []
+    for subtype in immoweb.get("property_subtypes", []):
+        immovlan_subtypes.extend(IMMOVLAN_SUBTYPE_MAP.get(subtype, []))
+    seen = set()
+    immovlan_subtypes = [s for s in immovlan_subtypes if not (s in seen or seen.add(s))]
+    if immovlan_subtypes:
+        params.append(("propertysubtypes", ",".join(immovlan_subtypes)))
+
+    if postal_code:
+        town = f"{postal_code}-{city_name.lower().replace(' ', '-')}"
+        params.append(("towns", town))
+
+    min_price = immoweb.get("min_price")
+    if min_price is not None:
+        params.append(("minprice", min_price))
+
+    max_price = immoweb.get("max_price")
+    if max_price is not None:
+        params.append(("maxprice", max_price))
+
+    min_bedrooms = immoweb.get("min_bedrooms")
+    if min_bedrooms is not None:
+        params.append(("minbedrooms", min_bedrooms))
+
+    max_bedrooms = immoweb.get("max_bedrooms")
+    if max_bedrooms is not None:
+        params.append(("maxbedrooms", max_bedrooms))
+
+    query_string = urllib.parse.urlencode(params, quote_via=urllib.parse.quote)
+    return f"{IMMOVLAN_BASE_URL}?{query_string}"
 
 
 def generate_trevi_city_url(city_name, postal_code, config):
