@@ -101,15 +101,25 @@ if (!$input) {
 
 $address  = trim($input['address']        ?? '');
 $radius   = (int) ($input['radius']       ?? 30);
-$country  = $input['country']             ?? 'BE';
 $regions  = $input['regions']             ?? [];
 $min_pop  = (int) ($input['min_population'] ?? 5000);
 $dir_from = $input['dir_from']            ?? 'North';
 $dir_to   = $input['dir_to']              ?? 'North';
 
+$allowed_countries = ['BE', 'FR', 'NL', 'LU'];
+$country = in_array($input['country'] ?? '', $allowed_countries, true)
+    ? $input['country']
+    : 'BE';
+
 if (!$address) {
     http_response_code(400);
     echo json_encode(['error' => 'Adresse manquante']);
+    exit;
+}
+
+if (!array_key_exists($dir_from, DIRECTIONS) || !array_key_exists($dir_to, DIRECTIONS)) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Direction invalide']);
     exit;
 }
 
