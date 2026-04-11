@@ -2,11 +2,44 @@
 header('Content-Type: application/json; charset=utf-8');
 
 define('GEONAMES_BASE', 'https://secure.geonames.org');
+define('CACHE_TTL',     30 * 24 * 3600); // 30 days
 
 const DIRECTIONS = [
     'North' => 0, 'NorthEast' => 45, 'East' => 90, 'SouthEast' => 135,
     'South' => 180, 'SouthWest' => 225, 'West' => 270, 'NorthWest' => 315,
 ];
+
+// ── SQLite cache ──────────────────────────────────────────────
+function open_cache(): PDO {
+    $db = new PDO('sqlite:' . __DIR__ . '/../cache.sqlite');
+    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $db->exec('CREATE TABLE IF NOT EXISTS location_cache (
+        lat_key   TEXT NOT NULL,
+        lng_key   TEXT NOT NULL,
+        postal    TEXT,
+        cached_at INTEGER NOT NULL,
+        PRIMARY KEY (lat_key, lng_key)
+    )');
+    return $db;
+}
+
+/** @return string|null|false  false = cache miss; null = cached (no postal found); string = postal code */
+function cache_get(PDO $db, float $lat, float $lng): string|null|false {
+    $stmt = $db->prepare(
+        'SELECT postal, cached_at FROM location_cache WHERE lat_key = ? AND lng_key = ?'
+    );
+    $stmt->execute([number_format($lat, 4, '.', ''), number_format($lng, 4, '.', '')]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!$row || (time() - (int) $row['cached_at']) > CACHE_TTL) return false;
+    return $row['postal']; // null or string
+}
+
+function cache_set(PDO $db, float $lat, float $lng, ?string $postal): void {
+    $stmt = $db->prepare(
+        'INSERT OR REPLACE INTO location_cache (lat_key, lng_key, postal, cached_at) VALUES (?, ?, ?, ?)'
+    );
+    $stmt->execute([number_format($lat, 4, '.', ''), number_format($lng, 4, '.', ''), $postal, time()]);
+}
 
 // ── HTTP helpers ──────────────────────────────────────────────
 function geonames_get(string $endpoint, array $params): ?array {
@@ -186,23 +219,36 @@ usort($cities, fn($a, $b) => strcmp(
     $b['toponymName'] ?? $b['name'] ?? ''
 ));
 
-// Fetch postal codes in parallel
-$postal_requests = [];
+// Fetch postal codes — cache-first, parallel API for misses
+$db       = open_cache();
+$cached   = [];
+$to_fetch = [];
+
 foreach ($cities as $key => $city) {
-    $postal_requests[$key] = ['lat' => $city['lat'], 'lng' => $city['lng'], 'maxRows' => 1];
+    $hit = cache_get($db, (float) $city['lat'], (float) $city['lng']);
+    if ($hit !== false) {
+        $cached[$key] = $hit;
+    } else {
+        $to_fetch[$key] = ['lat' => $city['lat'], 'lng' => $city['lng'], 'maxRows' => 1];
+    }
 }
-$postal_responses = geonames_get_multi(
-    'findNearbyPostalCodesJSON',
-    $postal_requests,
-    ['username' => $username]
-);
+
+$fetched = [];
+if ($to_fetch) {
+    $responses = geonames_get_multi('findNearbyPostalCodesJSON', $to_fetch, ['username' => $username]);
+    foreach ($to_fetch as $key => $_) {
+        $postal      = $responses[$key]['postalCodes'][0]['postalCode'] ?? null;
+        $fetched[$key] = $postal;
+        cache_set($db, (float) $cities[$key]['lat'], (float) $cities[$key]['lng'], $postal);
+    }
+}
 
 $result_cities = [];
 $all_postal    = [];
 
 foreach ($cities as $key => $city) {
     $name   = $city['toponymName'] ?? $city['name'] ?? '';
-    $postal = $postal_responses[$key]['postalCodes'][0]['postalCode'] ?? null;
+    $postal = array_key_exists($key, $cached) ? $cached[$key] : ($fetched[$key] ?? null);
     $result_cities[] = [
         'name'   => $name,
         'lat'    => (float) $city['lat'],
