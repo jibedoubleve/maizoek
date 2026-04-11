@@ -7,3 +7,6 @@ cache.sqlite
 # other
 typescript
 .DS_Store
+
+# Credentials 
+src/config/infra.json
