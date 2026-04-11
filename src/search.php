@@ -4,7 +4,7 @@ header('Content-Type: application/json; charset=utf-8');
 define('GEONAMES_BASE', 'https://secure.geonames.org');
 define('CACHE_TTL',     30 * 24 * 3600); // 30 days
 
-require_once __DIR__ . '/constants.php';
+require_once __DIR__ . '/lib/constants.php';
 
 // ── SQLite cache ──────────────────────────────────────────────
 function open_cache(): PDO {
@@ -125,7 +125,7 @@ function is_in_range(float $bearing, string $dir_from, string $dir_to): bool {
 }
 
 // ── Load server config ────────────────────────────────────────
-$infra_file = __DIR__ . '/infra.json';
+$infra_file = __DIR__ . '/config/infra.json';
 if (!file_exists($infra_file)) {
     http_response_code(500);
     echo json_encode(['error' => 'infra.json introuvable']);
@@ -140,7 +140,7 @@ if (!$username) {
     exit;
 }
 
-$query_file = __DIR__ . '/query_params.json';
+$query_file = __DIR__ . '/config/query_params.json';
 if (!file_exists($query_file)) {
     http_response_code(500);
     echo json_encode(['error' => 'query_params.json introuvable']);
