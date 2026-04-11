@@ -8,7 +8,7 @@ const DIRECTIONS = [
     'South' => 180, 'SouthWest' => 225, 'West' => 270, 'NorthWest' => 315,
 ];
 
-// ── HTTP helper ───────────────────────────────────────────────
+// ── HTTP helpers ──────────────────────────────────────────────
 function geonames_get(string $endpoint, array $params): ?array {
     $url = GEONAMES_BASE . '/' . $endpoint . '?' . http_build_query($params);
     $ch  = curl_init($url);
@@ -17,7 +17,41 @@ function geonames_get(string $endpoint, array $params): ?array {
         CURLOPT_TIMEOUT        => 10,
     ]);
     $response = curl_exec($ch);
+    curl_close($ch);
     return $response ? json_decode($response, true) : null;
+}
+
+function geonames_get_multi(string $endpoint, array $requests, array $common_params): array {
+    $mh      = curl_multi_init();
+    $handles = [];
+
+    foreach ($requests as $key => $params) {
+        $url = GEONAMES_BASE . '/' . $endpoint . '?' . http_build_query(array_merge($common_params, $params));
+        $ch  = curl_init($url);
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT        => 10,
+        ]);
+        curl_multi_add_handle($mh, $ch);
+        $handles[$key] = $ch;
+    }
+
+    $running = null;
+    do {
+        curl_multi_exec($mh, $running);
+        curl_multi_select($mh);
+    } while ($running > 0);
+
+    $results = [];
+    foreach ($handles as $key => $ch) {
+        $body          = curl_multi_getcontent($ch);
+        $results[$key] = $body ? json_decode($body, true) : null;
+        curl_multi_remove_handle($mh, $ch);
+        curl_close($ch);
+    }
+
+    curl_multi_close($mh);
+    return $results;
 }
 
 // ── GeoNames helpers ──────────────────────────────────────────
@@ -43,12 +77,6 @@ function find_nearby_cities(float $lat, float $lng, int $radius, int $min_popula
     return $data['geonames'] ?? [];
 }
 
-function fetch_postal_code(float $lat, float $lng, string $username): ?string {
-    $data = geonames_get('findNearbyPostalCodesJSON', [
-        'lat' => $lat, 'lng' => $lng, 'maxRows' => 1, 'username' => $username,
-    ]);
-    return $data['postalCodes'][0]['postalCode'] ?? null;
-}
 
 // ── Direction filter ──────────────────────────────────────────
 function calculate_bearing(float $lat1, float $lng1, float $lat2, float $lng2): float {
@@ -158,13 +186,23 @@ usort($cities, fn($a, $b) => strcmp(
     $b['toponymName'] ?? $b['name'] ?? ''
 ));
 
-// Fetch postal codes
+// Fetch postal codes in parallel
+$postal_requests = [];
+foreach ($cities as $key => $city) {
+    $postal_requests[$key] = ['lat' => $city['lat'], 'lng' => $city['lng'], 'maxRows' => 1];
+}
+$postal_responses = geonames_get_multi(
+    'findNearbyPostalCodesJSON',
+    $postal_requests,
+    ['username' => $username]
+);
+
 $result_cities = [];
 $all_postal    = [];
 
-foreach ($cities as $city) {
+foreach ($cities as $key => $city) {
     $name   = $city['toponymName'] ?? $city['name'] ?? '';
-    $postal = fetch_postal_code((float) $city['lat'], (float) $city['lng'], $username);
+    $postal = $postal_responses[$key]['postalCodes'][0]['postalCode'] ?? null;
     $result_cities[] = [
         'name'   => $name,
         'lat'    => (float) $city['lat'],
