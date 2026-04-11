@@ -1,0 +1,22 @@
+{
+  "language": "fr",
+  "address": "Liège",
+  "radius": 30,
+  "dir_from": "SouthWest",
+  "dir_to": "North",
+  "min_population": 2000,
+  "country": "BE",
+  "regions": ["WAL"],
+  "fcodes": ["PPL", "PPLA", "PPLA2", "PPLA3", "PPLA4"],
+  "geonames_username": "your_geonames_username",
+  "immoweb": {
+    "transaction": "for-sale",
+    "property_type": "house",
+    "property_subtypes": ["HOUSE", "VILLA"],
+    "min_price": 400000,
+    "max_price": 800000,
+    "min_bedrooms": 4,
+    "max_bedrooms": null,
+    "epc_scores": ["A++", "A+", "A", "B", "C"]
+  }
+}
