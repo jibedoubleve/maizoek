@@ -40,7 +40,13 @@
     "CASTLE": "Château",
     "BUNGALOW": "Bungalow",
     "COUNTRY_COTTAGE": "Cottage",
-    "PAVILION": "Pavillon"
+    "PAVILION": "Pavillon",
+    "dir_from": "Direction de",
+    "dir_to": "Direction à",
+    "min_population": "Population min.",
+    "empty_cities": "Lance une recherche pour voir les villes.",
+    "generate_links": "Générer les liens",
+    "generating": "Génération en cours…"
   },
   "en": {
     "title": "Property Search",
@@ -82,7 +88,13 @@
     "CASTLE": "Castle",
     "BUNGALOW": "Bungalow",
     "COUNTRY_COTTAGE": "Country Cottage",
-    "PAVILION": "Pavilion"
+    "PAVILION": "Pavilion",
+    "dir_from": "Direction from",
+    "dir_to": "Direction to",
+    "min_population": "Min. population",
+    "empty_cities": "Run a search to see cities.",
+    "generate_links": "Generate links",
+    "generating": "Generating…"
   },
   "nl": {
     "title": "Vastgoedzoekopdracht",
@@ -124,6 +136,12 @@
     "CASTLE": "Kasteel",
     "BUNGALOW": "Bungalow",
     "COUNTRY_COTTAGE": "Cottage",
-    "PAVILION": "Paviljoen"
+    "PAVILION": "Paviljoen",
+    "dir_from": "Richting van",
+    "dir_to": "Richting naar",
+    "min_population": "Min. bevolking",
+    "empty_cities": "Start een zoekopdracht om steden te zien.",
+    "generate_links": "Links genereren",
+    "generating": "Bezig met genereren…"
   }
 }

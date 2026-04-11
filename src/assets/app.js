@@ -333,7 +333,7 @@ async function executeSearch() {
 
     btn.disabled     = true;
     if (spinner) spinner.hidden = false;
-    if (label)   label.textContent = 'Génération en cours…';
+    if (label)   label.textContent = TRANSLATIONS.generating ?? 'Génération en cours…';
     if (status)  { status.textContent = ''; status.hidden = true; }
 
     try {
@@ -361,7 +361,7 @@ async function executeSearch() {
     } finally {
         btn.disabled = false;
         if (spinner) spinner.hidden = true;
-        if (label)   label.textContent = 'Générer les liens';
+        if (label)   label.textContent = TRANSLATIONS.generate_links ?? 'Générer les liens';
     }
 }
 
