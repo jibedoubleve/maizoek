@@ -1,7 +1,7 @@
 <?php
 header('Content-Type: application/json; charset=utf-8');
 
-define('GEONAMES_BASE', 'http://api.geonames.org');
+define('GEONAMES_BASE', 'https://secure.geonames.org');
 
 const DIRECTIONS = [
     'North' => 0, 'NorthEast' => 45, 'East' => 90, 'SouthEast' => 135,
