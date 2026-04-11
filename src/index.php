@@ -39,7 +39,8 @@ function subtypeLabel(string $st, array $t): string {
     unset($client_config['fcodes']);
     ?>
     <script>const DEFAULT_CONFIG = <?= json_encode($client_config, JSON_UNESCAPED_UNICODE) ?>;
-    const DIRECTIONS = <?= json_encode(DIRECTIONS) ?>;</script>
+    const DIRECTIONS = <?= json_encode(DIRECTIONS) ?>;
+    const TRANSLATIONS = <?= json_encode($t, JSON_UNESCAPED_UNICODE) ?>;</script>
 </head>
 <body>
 
@@ -47,7 +48,7 @@ function subtypeLabel(string $st, array $t): string {
 <div class="action-bar">
     <button id="btn-search" class="btn-search">
         <span id="search-spinner" class="spinner" hidden></span>
-        <span id="search-label">Générer les liens</span>
+        <span id="search-label"><?= h($t['generate_links'] ?? 'Générer les liens') ?></span>
     </button>
     <div class="action-divider"></div>
     <div id="result-buttons" class="result-buttons" hidden>
@@ -116,7 +117,7 @@ function subtypeLabel(string $st, array $t): string {
                             </div>
                         </div>
                         <div class="param-row">
-                            <span class="param-label">Direction de</span>
+                            <span class="param-label"><?= h($t['dir_from'] ?? 'Direction de') ?></span>
                             <div class="param-value">
                                 <select class="form-input" id="f-dir-from">
                                     <?php foreach ($directions as $d): ?>
@@ -126,7 +127,7 @@ function subtypeLabel(string $st, array $t): string {
                             </div>
                         </div>
                         <div class="param-row">
-                            <span class="param-label">Direction à</span>
+                            <span class="param-label"><?= h($t['dir_to'] ?? 'Direction à') ?></span>
                             <div class="param-value">
                                 <select class="form-input" id="f-dir-to">
                                     <?php foreach ($directions as $d): ?>
@@ -136,7 +137,7 @@ function subtypeLabel(string $st, array $t): string {
                             </div>
                         </div>
                         <div class="param-row">
-                            <span class="param-label">Population min.</span>
+                            <span class="param-label"><?= h($t['min_population'] ?? 'Population min.') ?></span>
                             <div class="param-value">
                                 <input class="form-input" type="number" id="f-min-population"
                                     value="<?= h($config['min_population'] ?? 5000) ?>" min="0" step="1000">
@@ -244,7 +245,7 @@ function subtypeLabel(string $st, array $t): string {
                 <span id="city-count" class="city-count">0</span>
             </div>
             <ul id="cities-list" class="city-list">
-                <li class="empty-state">Lance une recherche pour voir les villes.</li>
+                <li class="empty-state"><?= h($t['empty_cities'] ?? 'Lance une recherche pour voir les villes.') ?></li>
             </ul>
         </div>
     </div>
