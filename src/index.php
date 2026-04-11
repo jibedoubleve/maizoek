@@ -4,13 +4,13 @@ $config = file_exists(__DIR__ . '/query_params.json')
     ? json_decode(file_get_contents(__DIR__ . '/query_params.json'), true)
     : [];
 
-$allowed_langs = ['fr', 'en', 'nl'];
-$lang = in_array($_GET['lang'] ?? '', $allowed_langs)
-    ? $_GET['lang']
-    : ($config['language'] ?? 'fr');
 $all_t   = file_exists(__DIR__ . '/translations.json')
     ? json_decode(file_get_contents(__DIR__ . '/translations.json'), true)
     : [];
+$allowed_langs = ['fr', 'en', 'nl'];
+$lang = in_array($_GET['lang'] ?? '', $allowed_langs)
+    ? $_GET['lang']
+    : ($all_t['selected_language'] ?? 'fr');
 $t       = $all_t[$lang] ?? $all_t['fr'] ?? [];
 $immoweb = $config['immoweb'] ?? [];
 
@@ -270,7 +270,11 @@ function subtypeLabel(string $st, array $t): string {
             .city-links { flex-wrap: wrap; }
         }
     </style>
-    <script>const DEFAULT_CONFIG = <?= json_encode($config, JSON_UNESCAPED_UNICODE) ?>;</script>
+    <?php
+    $client_config = $config;
+    unset($client_config['fcodes']);
+    ?>
+    <script>const DEFAULT_CONFIG = <?= json_encode($client_config, JSON_UNESCAPED_UNICODE) ?>;</script>
 </head>
 <body>
 

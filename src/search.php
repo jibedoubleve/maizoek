@@ -67,22 +67,30 @@ function is_in_range(float $bearing, string $dir_from, string $dir_to): bool {
     return $bearing >= $from || $bearing <= $to;
 }
 
-// ── Load server config (keeps geonames_username server-side) ──
-$config_file = __DIR__ . '/query_params.json';
-if (!file_exists($config_file)) {
+// ── Load server config ────────────────────────────────────────
+$infra_file = __DIR__ . '/infra.json';
+if (!file_exists($infra_file)) {
+    http_response_code(500);
+    echo json_encode(['error' => 'infra.json introuvable']);
+    exit;
+}
+$infra    = json_decode(file_get_contents($infra_file), true);
+$username = $infra['geonames_username'] ?? '';
+
+if (!$username) {
+    http_response_code(500);
+    echo json_encode(['error' => 'geonames_username manquant dans infra.json']);
+    exit;
+}
+
+$query_file = __DIR__ . '/query_params.json';
+if (!file_exists($query_file)) {
     http_response_code(500);
     echo json_encode(['error' => 'query_params.json introuvable']);
     exit;
 }
-$server_config  = json_decode(file_get_contents($config_file), true);
-$username       = $server_config['geonames_username'] ?? '';
+$server_config  = json_decode(file_get_contents($query_file), true);
 $default_fcodes = $server_config['fcodes'] ?? ['PPL', 'PPLA', 'PPLA2', 'PPLA3', 'PPLA4'];
-
-if (!$username) {
-    http_response_code(500);
-    echo json_encode(['error' => 'geonames_username manquant dans query_params.json']);
-    exit;
-}
 
 // ── Read POST input ───────────────────────────────────────────
 $input = json_decode(file_get_contents('php://input'), true);
