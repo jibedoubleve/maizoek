@@ -164,8 +164,7 @@ function updateMap(data) {
     const bounds = [];
     data.cities.forEach(city => {
         L.marker([city.lat, city.lng])
-            .bindPopup(`<b>${city.name}</b>${city.postal ? ' (' + city.postal + ')' : ''}`)
-            .bindTooltip(city.name)
+            .bindTooltip(`${city.name}${city.postal ? ' (' + city.postal + ')' : ''}`)
             .addTo(markersLayer);
         bounds.push([city.lat, city.lng]);
     });
@@ -247,17 +246,35 @@ function renderCitiesList(cities, s) {
         li.dataset.name    = city.name;
         li.dataset.postal  = city.postal || '?';
 
-        const links = [];
+        const nameSpan = document.createElement('span');
+        nameSpan.className   = 'city-name';
+        nameSpan.textContent = city.name;
+
+        const postalSpan = document.createElement('span');
+        postalSpan.className   = 'city-postal';
+        postalSpan.textContent = city.postal || '?';
+
+        const linksDiv = document.createElement('div');
+        linksDiv.className = 'city-links';
         if (city.postal) {
-            links.push(`<a href="${buildImmowebCity(city.name, city.postal, s)}" target="_blank" class="city-link city-link-immoweb">Immoweb</a>`);
-            if (s.transaction !== 'for-rent') links.push(`<a href="${buildTreviCity(city.name, city.postal, s)}" target="_blank" class="city-link city-link-trevi">Trevi</a>`);
-            links.push(`<a href="${buildImmovlanCity(city.name, city.postal, s)}" target="_blank" class="city-link city-link-immovlan">Immovlan</a>`);
+            const defs = [
+                { url: buildImmowebCity(city.name, city.postal, s), css: 'city-link-immoweb', label: 'Immoweb' },
+                ...(s.transaction !== 'for-rent' ? [{ url: buildTreviCity(city.name, city.postal, s), css: 'city-link-trevi', label: 'Trevi' }] : []),
+                { url: buildImmovlanCity(city.name, city.postal, s), css: 'city-link-immovlan', label: 'Immovlan' },
+            ];
+            defs.forEach(({ url, css, label }) => {
+                const a = document.createElement('a');
+                a.href        = url;
+                a.target      = '_blank';
+                a.className   = `city-link ${css}`;
+                a.textContent = label;
+                linksDiv.appendChild(a);
+            });
         }
 
-        li.innerHTML = `
-            <span class="city-name">${city.name}</span>
-            <span class="city-postal">${city.postal || '?'}</span>
-            <div class="city-links">${links.join('')}</div>`;
+        li.appendChild(nameSpan);
+        li.appendChild(postalSpan);
+        li.appendChild(linksDiv);
         list.appendChild(li);
     });
 }
