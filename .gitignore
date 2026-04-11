@@ -1,13 +1,8 @@
 # Vim
 *.swp
 
-# Scripts configuration
-config.json
-query_params.json
-cities.*
-
-# Pythons
-__pycache__/
+# Application
+cache.sqlite
 
 # other
 typescript
