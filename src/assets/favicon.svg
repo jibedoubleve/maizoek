@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <!-- Warm dawn sky inside the lens -->
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#bfdbfe"/>
+      <stop offset="100%" stop-color="#fef9ee"/>
+    </linearGradient>
+    <!-- Sunlit house facade -->
+    <linearGradient id="facade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#fefce8"/>
+      <stop offset="100%" stop-color="#fde68a"/>
+    </linearGradient>
+    <!-- Rich warm roof -->
+    <linearGradient id="roof" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#b45309"/>
+      <stop offset="100%" stop-color="#78350f"/>
+    </linearGradient>
+    <!-- Clip everything to the lens circle -->
+    <clipPath id="lens-clip">
+      <circle cx="27" cy="26" r="20"/>
+    </clipPath>
+    <!-- Soft inner shadow on the lens rim -->
+    <filter id="inner-glow">
+      <feGaussianBlur stdDeviation="1.2" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- ── Lens interior ── -->
+  <circle cx="27" cy="26" r="20" fill="url(#sky)"/>
+
+  <g clip-path="url(#lens-clip)">
+    <!-- Lawn -->
+    <rect x="7" y="39" width="40" height="7" fill="#86efac"/>
+    <rect x="7" y="40" width="40" height="6" fill="#4ade80" opacity="0.4"/>
+
+    <!-- House body -->
+    <rect x="14" y="27" width="26" height="16" fill="url(#facade)" rx="1.5"/>
+
+    <!-- Roof -->
+    <polygon points="10,28 27,11 44,28" fill="url(#roof)"/>
+
+    <!-- Chimney -->
+    <rect x="33" y="15" width="4.5" height="8" fill="#92400e" rx="0.5"/>
+    <!-- Chimney top -->
+    <rect x="32" y="14" width="6.5" height="2" fill="#78350f" rx="0.5"/>
+
+    <!-- Door — deep indigo, arched top -->
+    <rect x="23" y="33" width="8" height="10" fill="#3730a3" rx="1"/>
+    <ellipse cx="27" cy="33" rx="4" ry="2.5" fill="#3730a3"/>
+    <!-- Door knob -->
+    <circle cx="30" cy="38.5" r="0.9" fill="#fbbf24"/>
+
+    <!-- Left window -->
+    <rect x="15" y="29" width="7" height="6" fill="#e0f2fe" rx="1"/>
+    <line x1="18.5" y1="29" x2="18.5" y2="35" stroke="#93c5fd" stroke-width="0.6"/>
+    <line x1="15"   y1="32" x2="22"   y2="32" stroke="#93c5fd" stroke-width="0.6"/>
+    <!-- Window glint -->
+    <rect x="15.5" y="29.5" width="2.5" height="1.5" fill="white" opacity="0.6" rx="0.3"/>
+
+    <!-- Right window -->
+    <rect x="34" y="29" width="7" height="6" fill="#e0f2fe" rx="1"/>
+    <line x1="37.5" y1="29" x2="37.5" y2="35" stroke="#93c5fd" stroke-width="0.6"/>
+    <line x1="34"   y1="32" x2="41"   y2="32" stroke="#93c5fd" stroke-width="0.6"/>
+    <!-- Window glint -->
+    <rect x="34.5" y="29.5" width="2.5" height="1.5" fill="white" opacity="0.6" rx="0.3"/>
+  </g>
+
+  <!-- ── Magnifying glass ring ── -->
+  <circle cx="27" cy="26" r="20" fill="none" stroke="#d97706" stroke-width="3.2"/>
+  <!-- Inner rim highlight -->
+  <circle cx="27" cy="26" r="20" fill="none" stroke="#fde68a" stroke-width="0.8" opacity="0.6"/>
+
+  <!-- ── Handle ── -->
+  <line x1="41.8" y1="41.8" x2="60.5" y2="60.5"
+        stroke="#92400e" stroke-width="5.5" stroke-linecap="round"/>
+  <line x1="41.8" y1="41.8" x2="59.5" y2="59.5"
+        stroke="#d97706" stroke-width="3.5" stroke-linecap="round"/>
+  <!-- Handle shine -->
+  <line x1="42.5" y1="42" x2="57" y2="56.5"
+        stroke="#fbbf24" stroke-width="1.2" stroke-linecap="round" opacity="0.7"/>
+</svg>
