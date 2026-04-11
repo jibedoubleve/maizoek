@@ -5,6 +5,13 @@ $config = file_exists(__DIR__ . '/config/query_params.json')
     ? json_decode(file_get_contents(__DIR__ . '/config/query_params.json'), true)
     : [];
 
+if (!empty($_COOKIE['user_config'])) {
+    $cookie_config = json_decode($_COOKIE['user_config'], true);
+    if (is_array($cookie_config)) {
+        $config = array_merge($config, $cookie_config);
+    }
+}
+
 $all_t   = file_exists(__DIR__ . '/config/translations.json')
     ? json_decode(file_get_contents(__DIR__ . '/config/translations.json'), true)
     : [];

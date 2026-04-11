@@ -308,6 +308,34 @@ function switchTab(tabId) {
     if (tabId === 'map' && leafletMap) setTimeout(() => leafletMap.invalidateSize(), 50);
 }
 
+// ── Cookie ────────────────────────────────────────────────────
+function saveConfigCookie() {
+    const sp     = getSearchParams();
+    const fs     = getFilterState();
+    const config = {
+        address:        sp.address,
+        radius:         sp.radius,
+        country:        sp.country || 'BE',
+        regions:        sp.regions,
+        dir_from:       sp.dir_from,
+        dir_to:         sp.dir_to,
+        min_population: sp.min_population,
+        immoweb: {
+            transaction:       fs.transaction,
+            property_type:     fs.propertyType,
+            property_subtypes: fs.subtypes,
+            min_price:         fs.minPrice,
+            max_price:         fs.maxPrice,
+            min_bedrooms:      fs.minBedrooms,
+            max_bedrooms:      fs.maxBedrooms,
+            epc_scores:        fs.epcScores,
+        },
+    };
+    const expires = new Date();
+    expires.setFullYear(expires.getFullYear() + 1);
+    document.cookie = `user_config=${encodeURIComponent(JSON.stringify(config))};expires=${expires.toUTCString()};path=/;SameSite=Lax`;
+}
+
 // ── Reset ─────────────────────────────────────────────────────
 function resetFilters() {
     const cfg = window.DEFAULT_CONFIG?.immoweb || {};
@@ -347,6 +375,7 @@ async function executeSearch() {
         if (!res.ok || data.error) throw new Error(data.error || 'Erreur serveur');
 
         searchResults = data;
+        saveConfigCookie();
         const s = getFilterState();
 
         updateMap(data);
