@@ -15,7 +15,6 @@ function geonames_get(string $endpoint, array $params): ?array {
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_TIMEOUT        => 10,
-        CURLOPT_SSL_VERIFYPEER => false,
     ]);
     $response = curl_exec($ch);
     return $response ? json_decode($response, true) : null;
