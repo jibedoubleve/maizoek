@@ -4,10 +4,7 @@ header('Content-Type: application/json; charset=utf-8');
 define('GEONAMES_BASE', 'https://secure.geonames.org');
 define('CACHE_TTL',     30 * 24 * 3600); // 30 days
 
-const DIRECTIONS = [
-    'North' => 0, 'NorthEast' => 45, 'East' => 90, 'SouthEast' => 135,
-    'South' => 180, 'SouthWest' => 225, 'West' => 270, 'NorthWest' => 315,
-];
+require_once __DIR__ . '/constants.php';
 
 // ── SQLite cache ──────────────────────────────────────────────
 function open_cache(): PDO {

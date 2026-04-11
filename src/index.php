@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/constants.php';
 // ── Config & translations ─────────────────────────────────────
 $config = file_exists(__DIR__ . '/query_params.json')
     ? json_decode(file_get_contents(__DIR__ . '/query_params.json'), true)
@@ -274,7 +275,8 @@ function subtypeLabel(string $st, array $t): string {
     $client_config = $config;
     unset($client_config['fcodes']);
     ?>
-    <script>const DEFAULT_CONFIG = <?= json_encode($client_config, JSON_UNESCAPED_UNICODE) ?>;</script>
+    <script>const DEFAULT_CONFIG = <?= json_encode($client_config, JSON_UNESCAPED_UNICODE) ?>;
+    const DIRECTIONS = <?= json_encode(DIRECTIONS) ?>;</script>
 </head>
 <body>
 

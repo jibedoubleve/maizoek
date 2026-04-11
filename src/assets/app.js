@@ -1,10 +1,7 @@
 'use strict';
 
 // ── Mappings ──────────────────────────────────────────────────
-const DIRECTIONS = {
-    North: 0, NorthEast: 45, East: 90, SouthEast: 135,
-    South: 180, SouthWest: 225, West: 270, NorthWest: 315,
-};
+// DIRECTIONS is injected server-side in index.php from constants.php
 const TREVI_TRANSACTION = { 'for-sale': 0, 'for-rent': 1 };
 const TREVI_PATH        = { house: 'maisons', apartment: 'appartements' };
 const TREVI_CAT         = { house: 1, apartment: 2 };
