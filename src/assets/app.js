@@ -79,7 +79,7 @@ function buildTreviCombined(s, cities) {
         `estatecategory=${TREVI_CAT[s.propertyType] ?? 1}`,
     ];
     cities.forEach(c => {
-        if (c.postal) parts.push(`zips%5B%5D=${encodeURIComponent(c.postal + '_' + c.name)}`);
+        if (c.postal) parts.push(`zips%5B%5D=${encodeURIComponent(c.postal + '_' + c.name.toUpperCase())}`);
     });
     if (s.minPrice) parts.push(`minprice=${s.minPrice}`);
     if (s.maxPrice) parts.push(`maxprice=${s.maxPrice}`);
@@ -124,7 +124,7 @@ function buildTreviCity(name, postal, s) {
     const parts = [
         `purpose=${TREVI_TRANSACTION[s.transaction] ?? 0}`,
         `estatecategory=${TREVI_CAT[s.propertyType] ?? 1}`,
-        `zips%5B%5D=${encodeURIComponent(postal + '_' + name)}`,
+        `zips%5B%5D=${encodeURIComponent(postal + '_' + name.toUpperCase())}`,
     ];
     if (s.minPrice) parts.push(`minprice=${s.minPrice}`);
     if (s.maxPrice) parts.push(`maxprice=${s.maxPrice}`);
