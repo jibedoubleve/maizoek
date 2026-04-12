@@ -1,5 +1,10 @@
 <?php
 require_once __DIR__ . '/lib/constants.php';
+// ── Infra config ──────────────────────────────────────────────
+$infra = file_exists(__DIR__ . '/config/infra.json')
+    ? json_decode(file_get_contents(__DIR__ . '/config/infra.json'), true)
+    : [];
+
 // ── Config & translations ─────────────────────────────────────
 $config = file_exists(__DIR__ . '/config/query_params.json')
     ? json_decode(file_get_contents(__DIR__ . '/config/query_params.json'), true)
@@ -54,6 +59,9 @@ function subtypeLabel(string $st, array $t): string {
     <script>const DEFAULT_CONFIG = <?= json_encode($client_config, JSON_UNESCAPED_UNICODE) ?>;
     const DIRECTIONS = <?= json_encode(DIRECTIONS) ?>;
     const TRANSLATIONS = <?= json_encode($t, JSON_UNESCAPED_UNICODE) ?>;</script>
+    <?php if (!empty($infra['goatcounter_url'])): ?>
+    <script data-goatcounter="<?= h($infra['goatcounter_url']) ?>/count" async src="//gc.zgo.at/count.js"></script>
+    <?php endif; ?>
 </head>
 <body>
 

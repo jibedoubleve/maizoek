@@ -1,3 +1,4 @@
 {
-  "geonames_username": "your_geonames_username"
+  "geonames_username": "your_geonames_username",
+  "goatcounter_url": "https://yoursite.goatcounter.com"
 }
