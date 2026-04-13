@@ -67,21 +67,9 @@ function subtypeLabel(string $st, array $t): string {
 
 <!-- ── Sticky action bar ─────────────────────────────────────── -->
 <div class="action-bar">
-    <button id="btn-search" class="btn-search">
-        <span id="search-spinner" class="spinner" hidden></span>
-        <span id="search-label"><?= h($t['generate_links'] ?? 'Générer les liens') ?></span>
-    </button>
-    <div class="action-divider"></div>
-    <div id="result-buttons" class="result-buttons" hidden>
-        <a id="btn-immoweb" href="#" target="_blank" class="search-btn search-btn-immoweb">
-            <span class="btn-logo">iw</span><?= h($t['search_button_immoweb'] ?? 'Immoweb') ?>
-        </a>
-        <a id="btn-trevi" href="#" target="_blank" class="search-btn search-btn-trevi">
-            <span class="btn-logo">tr</span><?= h($t['search_button_trevi'] ?? 'Trevi') ?>
-        </a>
-        <a id="btn-immovlan" href="#" target="_blank" class="search-btn search-btn-immovlan">
-            <span class="btn-logo">iv</span><?= h($t['search_button_immovlan'] ?? 'Immovlan') ?>
-        </a>
+    <div class="action-bar-brand">
+        <span class="brand-title"><?= h($t['header_title'] ?? 'Recherche immobilière multi-zones') ?></span>
+        <span class="brand-subtitle">Immoweb &middot; Trevi &middot; Immovlan</span>
     </div>
     <span id="search-status" hidden></span>
     <nav class="lang-switcher">
@@ -94,11 +82,10 @@ function subtypeLabel(string $st, array $t): string {
 <!-- ── Main ──────────────────────────────────────────────────── -->
 <div class="main">
 
-    <!-- Tabs -->
+<!-- Tabs -->
     <div class="tabs">
         <button class="tab-btn active" data-tab="params"><?= h($t['search_params'] ?? 'Paramètres') ?></button>
-        <button class="tab-btn" data-tab="map"><?= h($t['map_title'] ?? 'Carte') ?></button>
-        <button class="tab-btn" data-tab="cities"><?= h($t['cities_title'] ?? 'Villes') ?></button>
+        <button class="tab-btn" data-tab="results" id="tab-btn-results" hidden><?= h($t['results_title'] ?? 'Résultats') ?></button>
     </div>
 
     <!-- ── Tab: Paramètres ────────────────────────────────────── -->
@@ -258,19 +245,48 @@ function subtypeLabel(string $st, array $t): string {
             </div>
 
         </div>
+
+        <div class="params-generate">
+            <p class="search-hint"><?= h($t['search_hint'] ?? 'Configurez votre zone et vos critères, puis lancez la recherche.') ?></p>
+            <button id="btn-search" class="btn-search-primary">
+                <span id="search-spinner" class="spinner" hidden></span>
+                <span id="search-label"><?= h($t['generate_links'] ?? 'Voir les annonces') ?></span>
+            </button>
+            <p id="search-progress" class="search-progress" hidden></p>
+        </div>
     </div>
 
-    <!-- ── Tab: Carte ─────────────────────────────────────────── -->
-    <div class="tab-panel" id="tab-map" hidden>
+    <!-- ── Tab: Résultats ────────────────────────────────────── -->
+    <div class="tab-panel" id="tab-results" hidden>
+        <div class="results-links">
+            <a id="btn-immoweb" href="#" target="_blank" class="result-link result-link-immoweb">
+                <span class="btn-logo">iw</span><?= h($t['search_button_immoweb'] ?? 'Rechercher sur Immoweb') ?>
+            </a>
+            <a id="btn-trevi" href="#" target="_blank" class="result-link result-link-trevi">
+                <span class="btn-logo">tr</span><?= h($t['search_button_trevi'] ?? 'Rechercher sur Trevi') ?>
+            </a>
+            <a id="btn-immovlan" href="#" target="_blank" class="result-link result-link-immovlan">
+                <span class="btn-logo">iv</span><?= h($t['search_button_immovlan'] ?? 'Rechercher sur Immovlan') ?>
+            </a>
+        </div>
+        <div class="map-header">
+            <span id="map-title" class="map-title"></span>
+            <span class="map-legend">
+                <span class="map-legend-dot"></span>
+                <?= h($t['map_legend_label'] ?? 'Commune incluse dans la recherche') ?>
+            </span>
+        </div>
         <div id="map"></div>
-    </div>
 
-    <!-- ── Tab: Villes ───────────────────────────────────────── -->
-    <div class="tab-panel" id="tab-cities" hidden>
-        <div class="cities-card">
-            <div class="cities-card-header">
-                <h2><?= h($t['cities_title'] ?? 'Villes incluses dans la recherche') ?></h2>
-                <span id="city-count" class="city-count">0</span>
+        <button id="btn-toggle-cities" class="cities-toggle" hidden>
+            <span id="cities-toggle-label"></span>
+            <span class="cities-toggle-chevron">›</span>
+        </button>
+        <div id="cities-panel" class="cities-panel" hidden>
+            <div class="cities-filter-wrap">
+                <span class="cities-filter-icon">&#128269;</span>
+                <input id="cities-filter" class="cities-filter-input" type="text"
+                    placeholder="<?= h($t['filter_cities'] ?? 'Filtrer les communes…') ?>">
             </div>
             <ul id="cities-list" class="city-list">
                 <li class="empty-state"><?= h($t['empty_cities'] ?? 'Lance une recherche pour voir les villes.') ?></li>

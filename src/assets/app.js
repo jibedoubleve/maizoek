@@ -248,10 +248,6 @@ function renderCitiesList(cities, s) {
         nameSpan.className   = 'city-name';
         nameSpan.textContent = city.name;
 
-        const postalSpan = document.createElement('span');
-        postalSpan.className   = 'city-postal';
-        postalSpan.textContent = city.postal || '?';
-
         const linksDiv = document.createElement('div');
         linksDiv.className = 'city-links';
         if (city.postal) {
@@ -271,7 +267,6 @@ function renderCitiesList(cities, s) {
         }
 
         li.appendChild(nameSpan);
-        li.appendChild(postalSpan);
         li.appendChild(linksDiv);
         list.appendChild(li);
     });
@@ -306,7 +301,7 @@ function updateUrls() {
 function switchTab(tabId) {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tabId));
     document.querySelectorAll('.tab-panel').forEach(p => { p.hidden = p.id !== 'tab-' + tabId; });
-    if (tabId === 'map' && leafletMap) setTimeout(() => leafletMap.invalidateSize(), 50);
+    if (tabId === 'results' && leafletMap) setTimeout(() => leafletMap.invalidateSize(), 50);
 }
 
 // ── Cookie ────────────────────────────────────────────────────
@@ -361,10 +356,13 @@ async function executeSearch() {
     const spinner = document.getElementById('search-spinner');
     const label   = document.getElementById('search-label');
 
+    const progress = document.getElementById('search-progress');
+
     btn.disabled     = true;
-    if (spinner) spinner.hidden = false;
-    if (label)   label.textContent = TRANSLATIONS.generating ?? 'Génération en cours…';
-    if (status)  { status.textContent = ''; status.hidden = true; }
+    if (spinner)  spinner.hidden = false;
+    if (label)    label.textContent = TRANSLATIONS.generating ?? 'Préparation en cours…';
+    if (status)   { status.textContent = ''; status.hidden = true; }
+    if (progress) { progress.textContent = TRANSLATIONS.search_progress ?? 'Recherche des communes dans votre zone…'; progress.hidden = false; }
 
     try {
         const res  = await fetch('search.php', {
@@ -384,22 +382,50 @@ async function executeSearch() {
         renderCitiesList(data.cities, s);
         updateUrls();
 
-        document.getElementById('result-buttons').hidden = false;
-        switchTab('map');
+        const mapTitle = document.getElementById('map-title');
+        if (mapTitle) mapTitle.textContent = `${data.cities.length} ${TRANSLATIONS.map_cities_label ?? 'communes dans votre zone'}`;
+
+        const toggleBtn   = document.getElementById('btn-toggle-cities');
+        const toggleLabel = document.getElementById('cities-toggle-label');
+        if (toggleBtn && toggleLabel) {
+            const tpl = TRANSLATIONS.view_cities ?? 'Voir les %d communes incluses';
+            toggleLabel.textContent = tpl.replace('%d', data.cities.length);
+            toggleBtn.hidden = false;
+        }
+
+        document.getElementById('tab-btn-results').hidden = false;
+        switchTab('results');
 
     } catch (err) {
         if (status) { status.textContent = '⚠ ' + err.message; status.hidden = false; }
     } finally {
         btn.disabled = false;
-        if (spinner) spinner.hidden = true;
-        if (label)   label.textContent = TRANSLATIONS.generate_links ?? 'Générer les liens';
+        if (spinner)  spinner.hidden = true;
+        if (label)    label.textContent = TRANSLATIONS.generate_links ?? 'Voir les annonces';
+        if (progress) progress.hidden = true;
     }
 }
 
 // ── Init ──────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('f-address')?.focus();
     document.getElementById('btn-search').addEventListener('click', executeSearch);
     document.getElementById('f-reset')?.addEventListener('click', resetFilters);
+
+    document.getElementById('btn-toggle-cities')?.addEventListener('click', () => {
+        const panel   = document.getElementById('cities-panel');
+        const chevron = document.querySelector('.cities-toggle-chevron');
+        const open    = !panel.hidden;
+        panel.hidden  = open;
+        if (chevron) chevron.style.transform = open ? '' : 'rotate(90deg)';
+    });
+
+    document.getElementById('cities-filter')?.addEventListener('input', e => {
+        const q = e.target.value.toLowerCase();
+        document.querySelectorAll('#cities-list .city-item').forEach(li => {
+            li.hidden = !li.dataset.name?.toLowerCase().includes(q);
+        });
+    });
 
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => switchTab(btn.dataset.tab));

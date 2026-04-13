@@ -37,32 +37,53 @@ body {
     padding: 10px 20px;
     display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
 }
-.btn-search {
-    display: flex; align-items: center; gap: 8px;
+.action-bar-brand { display: flex; flex-direction: column; gap: 1px; }
+.brand-title {
+    font-size: 0.95em; font-weight: 700; color: var(--color-text); line-height: 1.2;
+}
+.brand-subtitle {
+    font-size: 0.72em; color: var(--color-text-muted); letter-spacing: 0.2px;
+}
+.btn-search-primary {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
     background: var(--color-immoweb); color: #fff;
     border: none; border-radius: var(--radius);
-    padding: 10px 20px; font-size: 0.95em; font-weight: 600;
-    cursor: pointer; transition: background 0.15s;
-    white-space: nowrap;
+    padding: 14px 40px; font-size: 1em; font-weight: 700;
+    cursor: pointer; transition: background 0.15s, transform 0.1s;
+    box-shadow: var(--shadow-md); white-space: nowrap;
 }
-.btn-search:hover   { background: var(--color-immoweb-hover); }
-.btn-search:disabled { opacity: 0.6; cursor: not-allowed; }
-.action-divider { width: 1px; height: 32px; background: var(--color-border); }
-.result-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
-.search-btn {
-    display: flex; align-items: center; gap: 8px;
-    padding: 10px 18px; border-radius: var(--radius);
-    text-decoration: none; font-size: 0.88em; font-weight: 600;
+.btn-search-primary:hover   { background: var(--color-immoweb-hover); transform: translateY(-1px); }
+.btn-search-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+/* ── Result links (tab Résultats) ── */
+.results-links {
+    display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px;
+}
+.result-link {
+    flex: 1; min-width: 180px;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    padding: 18px 20px; border-radius: var(--radius);
+    text-decoration: none; font-size: 1em; font-weight: 700;
     box-shadow: var(--shadow-sm); transition: background 0.15s, transform 0.1s;
-    white-space: nowrap;
 }
-.search-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
-.search-btn-immoweb  { background: var(--color-immoweb);  color: #fff; }
-.search-btn-immoweb:hover  { background: var(--color-immoweb-hover); }
-.search-btn-trevi    { background: var(--color-trevi);    color: #fff; }
-.search-btn-trevi:hover    { background: var(--color-trevi-hover); }
-.search-btn-immovlan { background: var(--color-immovlan); color: #fff; }
-.search-btn-immovlan:hover { background: var(--color-immovlan-hover); }
+.result-link:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.result-link-immoweb  { background: var(--color-immoweb);  color: #fff; }
+.result-link-immoweb:hover  { background: var(--color-immoweb-hover); }
+.result-link-trevi    { background: var(--color-trevi);    color: #fff; }
+.result-link-trevi:hover    { background: var(--color-trevi-hover); }
+.result-link-immovlan { background: var(--color-immovlan); color: #fff; }
+.result-link-immovlan:hover { background: var(--color-immovlan-hover); }
+
+/* ── Params generate button ── */
+.params-generate {
+    display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 20px 0 4px;
+}
+.search-hint {
+    margin: 0; font-size: 0.82em; color: var(--color-text-muted); text-align: center;
+}
+.search-progress {
+    margin: 0; font-size: 0.82em; color: var(--color-immoweb);
+    text-align: center; font-style: italic;
+}
 .btn-logo {
     width: 20px; height: 20px; border-radius: 4px;
     background: rgba(255,255,255,0.25);
@@ -85,6 +106,7 @@ body {
     vertical-align: middle;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+
 
 /* ── Tabs ── */
 .main { max-width: 900px; margin: 0 auto; padding: 20px 20px 40px; }
@@ -126,7 +148,7 @@ body {
     border-radius: 6px; font-size: 0.85em; color: var(--color-text);
     background: var(--color-bg); outline: none; transition: border-color 0.15s;
 }
-.form-input:focus { border-color: var(--color-immoweb); background: #fff; }
+.form-input:focus { border-color: var(--color-immoweb); background: #fff; box-shadow: 0 0 0 3px var(--color-immoweb-light); }
 .form-input-sm { width: 80px; }
 .section-compass { display: flex; align-items: center; gap: 16px; }
 .section-compass > div { flex: 1; }
@@ -169,21 +191,51 @@ body {
 }
 
 /* ── Map tab ── */
+.map-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 8px; flex-wrap: wrap; gap: 8px;
+}
+.map-title {
+    font-size: 0.95em; font-weight: 700; color: var(--color-text);
+}
+.map-legend {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 0.78em; color: var(--color-text-muted);
+}
+.map-legend-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: #2a84cb; flex-shrink: 0;
+}
 #map { height: 520px; border-radius: var(--radius); border: 1px solid var(--color-border); }
 
-/* ── Cities tab ── */
-.cities-card {
-    background: var(--color-surface); border-radius: var(--radius);
-    border: 1px solid var(--color-border); box-shadow: var(--shadow-sm); overflow: hidden;
+/* ── Cities toggle + panel ── */
+.cities-toggle {
+    display: flex; align-items: center; gap: 6px;
+    margin-top: 12px; padding: 0; background: none; border: none;
+    font-size: 0.82em; color: var(--color-text-muted); cursor: pointer;
+    text-decoration: underline; text-underline-offset: 3px;
+    text-decoration-color: transparent; transition: color 0.15s, text-decoration-color 0.15s;
 }
-.cities-card-header {
-    padding: 14px 18px; border-bottom: 1px solid var(--color-border);
-    display: flex; align-items: center; justify-content: space-between;
+.cities-toggle:hover { color: var(--color-text); text-decoration-color: var(--color-border); }
+.cities-toggle-chevron {
+    font-size: 1.1em; display: inline-block; transition: transform 0.2s;
 }
-.cities-card-header h2 {
-    margin: 0; font-size: 0.85em; font-weight: 700;
-    text-transform: uppercase; letter-spacing: 0.8px; color: var(--color-text-muted);
+.cities-panel {
+    margin-top: 8px; background: var(--color-surface);
+    border: 1px solid var(--color-border); border-radius: var(--radius);
+    overflow: hidden;
 }
+.cities-filter-wrap {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 14px; border-bottom: 1px solid var(--color-border);
+    background: #fff;
+}
+.cities-filter-icon { font-size: 0.9em; flex-shrink: 0; opacity: 0.5; }
+.cities-filter-input {
+    flex: 1; border: none; outline: none; background: transparent;
+    font-size: 0.85em; color: var(--color-text);
+}
+.cities-filter-input::placeholder { color: var(--color-text-muted); }
 .city-count {
     background: var(--color-tag-bg); color: var(--color-text-muted);
     font-size: 0.75em; font-weight: 600; padding: 2px 8px; border-radius: 20px;
@@ -196,7 +248,6 @@ body {
 .city-item:last-child { border-bottom: none; }
 .city-item:hover { background: #fafbfc; }
 .city-name   { flex: 1; font-size: 0.88em; font-weight: 500; }
-.city-postal { font-size: 0.78em; color: var(--color-text-muted); background: var(--color-tag-bg); padding: 1px 7px; border-radius: 4px; }
 .city-links  { display: flex; gap: 6px; }
 .city-link   { font-size: 0.75em; font-weight: 600; padding: 3px 10px; border-radius: 5px; text-decoration: none; transition: opacity 0.15s; }
 .city-link:hover { opacity: 0.8; }
@@ -234,7 +285,7 @@ body {
 /* ── Responsive ── */
 @media (max-width: 640px) {
     .params-grid { grid-template-columns: 1fr; }
-    .result-buttons { gap: 6px; }
-    .search-btn { padding: 8px 12px; font-size: 0.82em; }
+    .results-links { flex-direction: column; }
+    .result-link { min-width: unset; }
     .city-links { flex-wrap: wrap; }
 }
