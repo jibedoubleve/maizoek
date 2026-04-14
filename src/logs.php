@@ -20,8 +20,20 @@ if (!$expected_user || !$expected_pass) {
     exit('Log viewer not configured. Add logs_user and logs_password to infra.json.');
 }
 
+// On Apache CGI/FastCGI (e.g. OVH shared hosting), PHP_AUTH_* are not populated.
+// Fall back to parsing the Authorization header directly.
 $user = $_SERVER['PHP_AUTH_USER'] ?? '';
 $pass = $_SERVER['PHP_AUTH_PW']   ?? '';
+
+if ($user === '') {
+    $auth_header = $_SERVER['HTTP_AUTHORIZATION']
+        ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION']
+        ?? (function_exists('getallheaders') ? (getallheaders()['Authorization'] ?? '') : '')
+        ?? '';
+    if (str_starts_with($auth_header, 'Basic ')) {
+        [$user, $pass] = explode(':', base64_decode(substr($auth_header, 6)), 2) + ['', ''];
+    }
+}
 
 if ($user !== $expected_user || !password_verify($pass, $expected_pass)) {
     header('WWW-Authenticate: Basic realm="Logs"');
@@ -108,6 +120,9 @@ $level_colors = [
         .ctx { font-family: monospace; font-size: 0.8em; color: var(--muted); }
         .data { font-family: monospace; font-size: 0.78em; color: #374151; max-width: 400px; word-break: break-all; }
         .empty { text-align: center; padding: 40px; color: var(--muted); }
+        .section-title { font-size: 0.72em; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); margin: 20px 0 8px; }
+        .set   { color: #16a34a; font-weight: 600; }
+        .unset { color: #dc2626; }
     </style>
 </head>
 <body>
@@ -174,6 +189,31 @@ $level_colors = [
         </tbody>
     </table>
 <?php endif; ?>
+
+<p class="section-title" style="padding: 0 20px;">Server info</p>
+<div class="container" style="padding-top: 0">
+    <table>
+        <thead><tr><th>Variable</th><th>Value</th></tr></thead>
+        <tbody>
+        <?php
+        $debug_keys = [
+            'PHP_AUTH_USER', 'PHP_AUTH_PW', 'HTTP_AUTHORIZATION',
+            'REDIRECT_HTTP_AUTHORIZATION', 'SERVER_SOFTWARE', 'GATEWAY_INTERFACE',
+        ];
+        foreach ($debug_keys as $key):
+            $val = $_SERVER[$key] ?? null;
+        ?>
+            <tr>
+                <td class="ctx"><?= $key ?></td>
+                <td><?php if ($val !== null && $val !== ''): ?>
+                    <span class="set"><?= htmlspecialchars($key === 'PHP_AUTH_PW' ? '***' : $val) ?></span>
+                <?php else: ?>
+                    <span class="unset">not set</span>
+                <?php endif; ?></td>
+            </tr>
+        <?php endforeach; ?>
+        </tbody>
+    </table>
 </div>
 
 </body>
