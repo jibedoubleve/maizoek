@@ -58,7 +58,8 @@ function subtypeLabel(string $st, array $t): string {
     ?>
     <script>const DEFAULT_CONFIG = <?= json_encode($client_config, JSON_UNESCAPED_UNICODE) ?>;
     const DIRECTIONS = <?= json_encode(DIRECTIONS) ?>;
-    const TRANSLATIONS = <?= json_encode($t, JSON_UNESCAPED_UNICODE) ?>;</script>
+    const TRANSLATIONS = <?= json_encode($t, JSON_UNESCAPED_UNICODE) ?>;
+    const TREVI_LOCALITIES = <?= json_encode(json_decode(file_get_contents(__DIR__ . '/config/trevi_localities.json'), true), JSON_UNESCAPED_UNICODE) ?>;</script>
     <?php if (!empty($infra['goatcounter_url'])): ?>
     <script data-goatcounter="<?= h($infra['goatcounter_url']) ?>/count" async src="//gc.zgo.at/count.js"></script>
     <?php endif; ?>

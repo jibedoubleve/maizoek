@@ -78,8 +78,14 @@ function buildTreviCombined(s, cities) {
         `purpose=${TREVI_TRANSACTION[s.transaction] ?? 0}`,
         `estatecategory=${TREVI_CAT[s.propertyType] ?? 1}`,
     ];
+    const seen = new Set();
     cities.forEach(c => {
-        if (c.postal) parts.push(`zips%5B%5D=${encodeURIComponent(c.postal + '_' + c.name.toUpperCase())}`);
+        if (c.postal) {
+            const ids = TREVI_LOCALITIES[c.postal] || [];
+            ids.forEach(id => {
+                if (!seen.has(id)) { seen.add(id); parts.push(`zips%5B%5D=${encodeURIComponent(id)}`); }
+            });
+        }
     });
     if (s.minPrice) parts.push(`minprice=${s.minPrice}`);
     if (s.maxPrice) parts.push(`maxprice=${s.maxPrice}`);
@@ -124,8 +130,9 @@ function buildTreviCity(name, postal, s) {
     const parts = [
         `purpose=${TREVI_TRANSACTION[s.transaction] ?? 0}`,
         `estatecategory=${TREVI_CAT[s.propertyType] ?? 1}`,
-        `zips%5B%5D=${encodeURIComponent(postal + '_' + name.toUpperCase())}`,
     ];
+    const ids = TREVI_LOCALITIES[postal] || [`${postal}_${name.toUpperCase()}`];
+    ids.forEach(id => parts.push(`zips%5B%5D=${encodeURIComponent(id)}`));
     if (s.minPrice) parts.push(`minprice=${s.minPrice}`);
     if (s.maxPrice) parts.push(`maxprice=${s.maxPrice}`);
     return `https://www.trevi.be/fr/acheter-bien-immobilier/${path}?${parts.join('&')}`;
