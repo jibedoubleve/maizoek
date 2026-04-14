@@ -5,6 +5,7 @@ define('GEONAMES_BASE', 'https://secure.geonames.org');
 define('CACHE_TTL',     30 * 24 * 3600); // 30 days
 
 require_once __DIR__ . '/lib/constants.php';
+require_once __DIR__ . '/lib/SqliteLogger.php';
 
 // ── SQLite cache ──────────────────────────────────────────────
 function open_cache(): PDO {
@@ -83,21 +84,40 @@ function geonames_get_multi(string $endpoint, array $requests, array $common_par
 }
 
 // ── GeoNames helpers ──────────────────────────────────────────
-function get_coordinates(string $address, string $country, string $username): ?array {
+function get_coordinates(string $address, string $country, string $username, $logger): ?array {
     $data = geonames_get('searchJSON', [
         'q' => $address, 'maxRows' => 1, 'country' => $country, 'username' => $username,
     ]);
-    if (empty($data['geonames'])) return null;
+    if ($data === null) {
+        $logger->error('GeoNames unreachable (cURL failure)', ['ctx' => 'geonames.city', 'address' => $address]);
+        return null;
+    }
+    if (isset($data['status'])) {
+        $logger->error('GeoNames API error', ['ctx' => 'geonames.city', 'address' => $address, 'status' => $data['status']]);
+        return null;
+    }
+    if (empty($data['geonames'])) {
+        $logger->warning('No results for address', ['ctx' => 'geonames.city', 'address' => $address]);
+        return null;
+    }
     return [(float) $data['geonames'][0]['lat'], (float) $data['geonames'][0]['lng']];
 }
 
 define('EXCLUDED_FCODES', ['PPLH', 'PPLQ', 'PPLW']);
 
-function find_nearby_cities(float $lat, float $lng, int $radius, string $username): array {
+function find_nearby_cities(float $lat, float $lng, int $radius, string $username, $logger): array {
     $data = geonames_get('findNearbyPlaceNameJSON', [
         'lat' => $lat, 'lng' => $lng, 'radius' => $radius,
         'maxRows' => 500, 'username' => $username,
     ]);
+    if ($data === null) {
+        $logger->error('GeoNames unreachable (cURL failure)', ['ctx' => 'geonames.city', 'lat' => $lat, 'lng' => $lng]);
+        return [];
+    }
+    if (isset($data['status'])) {
+        $logger->error('GeoNames API error', ['ctx' => 'geonames.city', 'lat' => $lat, 'lng' => $lng, 'status' => $data['status']]);
+        return [];
+    }
     return $data['geonames'] ?? [];
 }
 
@@ -127,6 +147,8 @@ if (!file_exists($infra_file)) {
 }
 $infra    = json_decode(file_get_contents($infra_file), true);
 $username = $infra['geonames_username'] ?? '';
+
+$logger = new SqliteLogger(__DIR__ . '/../cache.sqlite');
 
 if (!$username) {
     http_response_code(500);
@@ -176,15 +198,18 @@ if (!array_key_exists($dir_from, DIRECTIONS) || !array_key_exists($dir_to, DIREC
 }
 
 // ── Pipeline ──────────────────────────────────────────────────
-$coords = get_coordinates($address, $country, $username);
+$logger->info('Search request', ['ctx' => 'search.request', 'address' => $address, 'radius' => $radius, 'country' => $country]);
+
+$coords = get_coordinates($address, $country, $username, $logger);
 if (!$coords) {
     http_response_code(404);
     echo json_encode(['error' => "Ville introuvable : $address"]);
     exit;
 }
 [$center_lat, $center_lng] = $coords;
+$logger->debug('Coordinates resolved', ['ctx' => 'geonames.city', 'address' => $address, 'lat' => $center_lat, 'lng' => $center_lng]);
 
-$cities = find_nearby_cities($center_lat, $center_lng, $radius, $username);
+$cities = find_nearby_cities($center_lat, $center_lng, $radius, $username, $logger);
 
 // Filter: fcode blacklist
 $cities = array_values(array_filter($cities, fn($c) =>
@@ -233,9 +258,13 @@ foreach ($cities as $key => $city) {
 
 $fetched = [];
 if ($to_fetch) {
+    $logger->debug('Fetching postal codes', ['ctx' => 'geonames.postal', 'count' => count($to_fetch)]);
     $responses = geonames_get_multi('findNearbyPostalCodesJSON', $to_fetch, ['username' => $username]);
     foreach ($to_fetch as $key => $_) {
-        $postal      = $responses[$key]['postalCodes'][0]['postalCode'] ?? null;
+        if (isset($responses[$key]['status'])) {
+            $logger->error('GeoNames postal API error', ['ctx' => 'geonames.postal', 'status' => $responses[$key]['status']]);
+        }
+        $postal        = $responses[$key]['postalCodes'][0]['postalCode'] ?? null;
         $fetched[$key] = $postal;
         cache_set($db, (float) $cities[$key]['lat'], (float) $cities[$key]['lng'], $postal);
     }
@@ -255,6 +284,8 @@ foreach ($cities as $key => $city) {
     ];
     if ($postal) $all_postal[] = $postal;
 }
+
+$logger->info('Search complete', ['ctx' => 'search.result', 'cities' => count($result_cities), 'postalCodes' => count($all_postal)]);
 
 echo json_encode([
     'center'      => ['lat' => $center_lat, 'lng' => $center_lng],

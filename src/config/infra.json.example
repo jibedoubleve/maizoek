@@ -1,4 +1,7 @@
 {
   "geonames_username": "your_geonames_username",
-  "goatcounter_url": "https://yoursite.goatcounter.com"
+  "goatcounter_url": "https://yoursite.goatcounter.com",
+  "logs_user": "your_username",
+  "logs_password": "your_plain_text_password",
+  "first_setup": true
 }
