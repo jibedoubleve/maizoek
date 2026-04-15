@@ -59,7 +59,10 @@
     "step1_label": "Zone & rayon",
     "step2_label": "Critères",
     "step3_label": "Générer les liens",
-    "results_title": "Résultats"
+    "results_title": "Résultats",
+    "include_under_option": "Inclure biens sous option",
+    "badge_tooltip_immoweb_only": "Non disponible sur Trevi et ImmoVlan",
+    "badge_tooltip_immoweb_immovlan": "Non disponible sur Trevi"
   },
   "en": {
     "title": "Property Search",
@@ -120,7 +123,10 @@
     "step1_label": "Zone & radius",
     "step2_label": "Criteria",
     "step3_label": "Generate links",
-    "results_title": "Results"
+    "results_title": "Results",
+    "include_under_option": "Include properties under option",
+    "badge_tooltip_immoweb_only": "Not available on Trevi and ImmoVlan",
+    "badge_tooltip_immoweb_immovlan": "Not available on Trevi"
   },
   "nl": {
     "title": "Vastgoedzoekopdracht",
@@ -181,6 +187,9 @@
     "step1_label": "Zone & straal",
     "step2_label": "Criteria",
     "step3_label": "Links genereren",
-    "results_title": "Resultaten"
+    "results_title": "Resultaten",
+    "include_under_option": "Eigendommen onder optie opnemen",
+    "badge_tooltip_immoweb_only": "Niet beschikbaar op Trevi en ImmoVlan",
+    "badge_tooltip_immoweb_immovlan": "Niet beschikbaar op Trevi"
   }
 }

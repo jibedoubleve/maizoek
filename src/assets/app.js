@@ -54,8 +54,9 @@ function getFilterState() {
         maxPrice:     intVal('f-max-price'),
         minBedrooms:  intVal('f-min-bedrooms'),
         maxBedrooms:  intVal('f-max-bedrooms'),
-        subtypes:     checks('subtype'),
-        epcScores:    checks('epc'),
+        subtypes:           checks('subtype'),
+        epcScores:          checks('epc'),
+        includeUnderOption: document.getElementById('f-include-under-option')?.checked ?? false,
     };
 }
 
@@ -69,6 +70,7 @@ function buildImmowebCombined(s, postalCodes) {
     if (s.maxBedrooms)     pairs.push(['maxBedroomCount', s.maxBedrooms]);
     if (s.subtypes.length) pairs.push(['propertySubtypes', s.subtypes.join(',')]);
     if (s.epcScores.length) pairs.push(['epcScores', s.epcScores.join(',')]);
+    if (!s.includeUnderOption) pairs.push(['isUnderOption', 'false']);
     return `${base}?${qs(pairs)}`;
 }
 
@@ -122,6 +124,7 @@ function buildImmowebCity(name, postal, s) {
     if (s.maxBedrooms)     pairs.push(['maxBedroomCount', s.maxBedrooms]);
     if (s.subtypes.length) pairs.push(['propertySubtypes', s.subtypes.join(',')]);
     if (s.epcScores.length) pairs.push(['epcScores', s.epcScores.join(',')]);
+    if (!s.includeUnderOption) pairs.push(['isUnderOption', 'false']);
     return `${base}?${qs(pairs)}`;
 }
 
@@ -332,7 +335,8 @@ function saveConfigCookie() {
             max_price:         fs.maxPrice,
             min_bedrooms:      fs.minBedrooms,
             max_bedrooms:      fs.maxBedrooms,
-            epc_scores:        fs.epcScores,
+            epc_scores:          fs.epcScores,
+            include_under_option: fs.includeUnderOption,
         },
     };
     const expires = new Date();
@@ -353,6 +357,8 @@ function resetFilters() {
     document.querySelectorAll('input[name="epc"]').forEach(cb => {
         cb.checked = cfg.epc_scores?.includes(cb.value) ?? false;
     });
+    const underOpt = document.getElementById('f-include-under-option');
+    if (underOpt) underOpt.checked = cfg.include_under_option ?? false;
     updateUrls();
 }
 

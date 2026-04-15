@@ -17,6 +17,7 @@
     "max_price": 800000,
     "min_bedrooms": 4,
     "max_bedrooms": null,
-    "epc_scores": ["A++", "A+", "A", "B", "C"]
+    "epc_scores": ["A++", "A+", "A", "B", "C"],
+    "include_under_option": false
   }
 }

@@ -202,7 +202,7 @@ function subtypeLabel(string $st, array $t): string {
                     </div>
                 </div>
                 <div class="param-row">
-                    <span class="param-label"><?= h($t['bedrooms'] ?? 'Chambres') ?></span>
+                    <span class="param-label"><?= h($t['bedrooms'] ?? 'Chambres') ?> <span class="provider-badge" data-tooltip="<?= h($t['badge_tooltip_immoweb_immovlan'] ?? 'Non disponible sur Trevi') ?>">Immoweb · ImmoVlan</span></span>
                     <div class="param-value">
                         <div class="filter-row" style="justify-content:flex-end">
                             <input class="form-input form-input-sm" type="number" id="f-min-bedrooms"
@@ -216,7 +216,7 @@ function subtypeLabel(string $st, array $t): string {
                     </div>
                 </div>
 
-                <span class="filter-label" style="margin-top:8px"><?= h($t['property_type'] ?? 'Sous-types') ?></span>
+                <span class="filter-label" style="margin-top:8px"><?= h($t['property_type'] ?? 'Sous-types') ?> <span class="provider-badge" data-tooltip="<?= h($t['badge_tooltip_immoweb_immovlan'] ?? 'Non disponible sur Trevi') ?>">Immoweb · ImmoVlan</span></span>
                 <div class="filter-chips">
                     <?php foreach ($all_subtypes as $st): ?>
                     <label class="filter-chip">
@@ -227,7 +227,7 @@ function subtypeLabel(string $st, array $t): string {
                     <?php endforeach; ?>
                 </div>
 
-                <span class="filter-label"><?= h($t['epc'] ?? 'PEB') ?></span>
+                <span class="filter-label"><?= h($t['epc'] ?? 'PEB') ?> <span class="provider-badge" data-tooltip="<?= h($t['badge_tooltip_immoweb_only'] ?? 'Non disponible sur Trevi et ImmoVlan') ?>">Immoweb</span></span>
                 <div class="filter-chips">
                     <?php foreach ($all_epc as $score): ?>
                     <label class="filter-chip">
@@ -236,6 +236,14 @@ function subtypeLabel(string $st, array $t): string {
                         <?= h($score) ?>
                     </label>
                     <?php endforeach; ?>
+                </div>
+
+                <div class="param-row">
+                    <span class="param-label"><?= h($t['include_under_option'] ?? 'Inclure biens sous option') ?> <span class="provider-badge" data-tooltip="<?= h($t['badge_tooltip_immoweb_only'] ?? 'Non disponible sur Trevi et ImmoVlan') ?>">Immoweb</span></span>
+                    <div class="param-value">
+                        <input type="checkbox" id="f-include-under-option"
+                            <?= chk($immoweb['include_under_option'] ?? false) ?>>
+                    </div>
                 </div>
 
                 <div class="filter-footer">
