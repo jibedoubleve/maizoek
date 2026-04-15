@@ -134,6 +134,7 @@ function calculate_bearing(float $lat1, float $lng1, float $lat2, float $lng2): 
 function is_in_range(float $bearing, string $dir_from, string $dir_to): bool {
     $from = DIRECTIONS[$dir_from] ?? 0;
     $to   = DIRECTIONS[$dir_to]   ?? 0;
+    if ($from === $to) return true;
     if ($from <= $to) return $bearing >= $from && $bearing <= $to;
     return $bearing >= $from || $bearing <= $to;
 }
