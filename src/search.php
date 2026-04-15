@@ -251,8 +251,19 @@ $to_fetch = [];
 foreach ($cities as $key => $city) {
     $hit = cache_get($db, (float) $city['lat'], (float) $city['lng']);
     if ($hit !== false) {
+        $logger->debug('GeoNames postal cache hit', [
+            'ctx'    => 'geonames.postal.cache',
+            'lat'    => $city['lat'],
+            'lng'    => $city['lng'],
+            'postal' => $hit,
+        ]);
         $cached[$key] = $hit;
     } else {
+        $logger->debug('GeoNames postal cache miss', [
+            'ctx' => 'geonames.postal.cache',
+            'lat' => $city['lat'],
+            'lng' => $city['lng'],
+        ]);
         $to_fetch[$key] = ['lat' => $city['lat'], 'lng' => $city['lng'], 'maxRows' => 1];
     }
 }
