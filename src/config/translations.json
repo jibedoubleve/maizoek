@@ -62,7 +62,13 @@
     "results_title": "Résultats",
     "include_under_option": "Inclure biens sous option",
     "badge_tooltip_immoweb_only": "Non disponible sur Trevi et ImmoVlan",
-    "badge_tooltip_immoweb_immovlan": "Non disponible sur Trevi"
+    "badge_tooltip_immoweb_immovlan": "Non disponible sur Trevi",
+    "badge_tooltip_epc": "Groupes Wallonie sur ImmoVlan",
+    "epc_excellent": "Excellent",
+    "epc_good": "Bon",
+    "epc_poor": "Moyen",
+    "epc_bad": "Mauvais",
+    "epc_all": "Tous"
   },
   "en": {
     "title": "Property Search",
@@ -126,7 +132,13 @@
     "results_title": "Results",
     "include_under_option": "Include properties under option",
     "badge_tooltip_immoweb_only": "Not available on Trevi and ImmoVlan",
-    "badge_tooltip_immoweb_immovlan": "Not available on Trevi"
+    "badge_tooltip_immoweb_immovlan": "Not available on Trevi",
+    "badge_tooltip_epc": "Wallonia groups on ImmoVlan",
+    "epc_excellent": "Excellent",
+    "epc_good": "Good",
+    "epc_poor": "Average",
+    "epc_bad": "Poor",
+    "epc_all": "All"
   },
   "nl": {
     "title": "Vastgoedzoekopdracht",
@@ -190,6 +202,12 @@
     "results_title": "Resultaten",
     "include_under_option": "Eigendommen onder optie opnemen",
     "badge_tooltip_immoweb_only": "Niet beschikbaar op Trevi en ImmoVlan",
-    "badge_tooltip_immoweb_immovlan": "Niet beschikbaar op Trevi"
+    "badge_tooltip_immoweb_immovlan": "Niet beschikbaar op Trevi",
+    "badge_tooltip_epc": "Waalse groepen op ImmoVlan",
+    "epc_excellent": "Uitstekend",
+    "epc_good": "Goed",
+    "epc_poor": "Gemiddeld",
+    "epc_bad": "Slecht",
+    "epc_all": "Alle"
   }
 }

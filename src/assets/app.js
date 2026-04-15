@@ -13,6 +13,16 @@ const IMMOVLAN_SUBTYPES    = {
     CASTLE: ['chateau'], BUNGALOW: ['bungalow'],
 };
 
+const EPC_SCALE  = ['A++', 'A+', 'A', 'B', 'C', 'D', 'E', 'F', 'G'];
+const EPC_COLORS = ['#1565C0', '#2E7D32', '#43A047', '#66BB6A', '#AFB42B', '#F9A825', '#EF6C00', '#D84315', '#B71C1C'];
+// Wallonia groupings used by ImmoVlan
+const IMMOVLAN_EPC_GROUPS = {
+    excellent: [0, 1],
+    good:      [2, 3],
+    poor:      [4, 5, 6],
+    bad:       [7, 8],
+};
+
 // ── State ─────────────────────────────────────────────────────
 let searchResults = null;
 let leafletMap    = null;
@@ -55,9 +65,25 @@ function getFilterState() {
         minBedrooms:  intVal('f-min-bedrooms'),
         maxBedrooms:  intVal('f-max-bedrooms'),
         subtypes:           checks('subtype'),
-        epcScores:          checks('epc'),
+        epcMin:             parseInt(val('f-epc-min') || '0'),
+        epcMax:             parseInt(val('f-epc-max') || '8'),
         includeUnderOption: document.getElementById('f-include-under-option')?.checked ?? false,
     };
+}
+
+// ── EPC helpers ───────────────────────────────────────────────
+function epcRangeToImmoweb(min, max) {
+    const capMax = Math.min(max, 7); // Immoweb stops at F (index 7), no G
+    if (min === 0 && capMax === 7) return []; // all scores = no filter param needed
+    if (min > capMax) return [];
+    return EPC_SCALE.slice(min, capMax + 1);
+}
+
+function epcRangeToImmovlanGroups(min, max) {
+    if (min === 0 && max === 8) return []; // all groups = no filter param needed
+    return Object.entries(IMMOVLAN_EPC_GROUPS)
+        .filter(([, indices]) => indices.some(i => i >= min && i <= max))
+        .map(([group]) => group);
 }
 
 // ── URL builders ──────────────────────────────────────────────
@@ -69,7 +95,8 @@ function buildImmowebCombined(s, postalCodes) {
     if (s.minBedrooms)     pairs.push(['minBedroomCount', s.minBedrooms]);
     if (s.maxBedrooms)     pairs.push(['maxBedroomCount', s.maxBedrooms]);
     if (s.subtypes.length) pairs.push(['propertySubtypes', s.subtypes.join(',')]);
-    if (s.epcScores.length) pairs.push(['epcScores', s.epcScores.join(',')]);
+    const immowebEpc = epcRangeToImmoweb(s.epcMin, s.epcMax);
+    if (immowebEpc.length) pairs.push(['epcScores', immowebEpc.join(',')]);
     if (!s.includeUnderOption) pairs.push(['isUnderOption', 'false']);
     return `${base}?${qs(pairs)}`;
 }
@@ -111,6 +138,8 @@ function buildImmovlanCombined(s, cities) {
     if (s.maxPrice)    pairs.push(['maxprice', s.maxPrice]);
     if (s.minBedrooms) pairs.push(['minbedrooms', s.minBedrooms]);
     if (s.maxBedrooms) pairs.push(['maxbedrooms', s.maxBedrooms]);
+    const ivEpc = epcRangeToImmovlanGroups(s.epcMin, s.epcMax);
+    if (ivEpc.length) pairs.push(['epcratings', ivEpc.join(',')]);
     return `https://immovlan.be/fr/immobilier?${qs(pairs)}`;
 }
 
@@ -123,7 +152,8 @@ function buildImmowebCity(name, postal, s) {
     if (s.minBedrooms)     pairs.push(['minBedroomCount', s.minBedrooms]);
     if (s.maxBedrooms)     pairs.push(['maxBedroomCount', s.maxBedrooms]);
     if (s.subtypes.length) pairs.push(['propertySubtypes', s.subtypes.join(',')]);
-    if (s.epcScores.length) pairs.push(['epcScores', s.epcScores.join(',')]);
+    const immowebEpc = epcRangeToImmoweb(s.epcMin, s.epcMax);
+    if (immowebEpc.length) pairs.push(['epcScores', immowebEpc.join(',')]);
     if (!s.includeUnderOption) pairs.push(['isUnderOption', 'false']);
     return `${base}?${qs(pairs)}`;
 }
@@ -153,6 +183,8 @@ function buildImmovlanCity(name, postal, s) {
     if (s.maxPrice)    pairs.push(['maxprice', s.maxPrice]);
     if (s.minBedrooms) pairs.push(['minbedrooms', s.minBedrooms]);
     if (s.maxBedrooms) pairs.push(['maxbedrooms', s.maxBedrooms]);
+    const ivEpc = epcRangeToImmovlanGroups(s.epcMin, s.epcMax);
+    if (ivEpc.length) pairs.push(['epcratings', ivEpc.join(',')]);
     return `https://immovlan.be/fr/immobilier?${qs(pairs)}`;
 }
 
@@ -282,6 +314,54 @@ function renderCitiesList(cities, s) {
     });
 }
 
+// ── EPC slider UI ─────────────────────────────────────────────
+function updateEpcSliderUI() {
+    const minInput = document.getElementById('f-epc-min');
+    const maxInput = document.getElementById('f-epc-max');
+    if (!minInput || !maxInput) return;
+
+    const minVal = parseInt(minInput.value);
+    const maxVal = parseInt(maxInput.value);
+    const minPct = (minVal / 8) * 100;
+    const maxPct = (maxVal / 8) * 100;
+
+    const leftOverlay  = document.getElementById('epc-inactive-left');
+    const rightOverlay = document.getElementById('epc-inactive-right');
+    if (leftOverlay)  { leftOverlay.style.width = minPct + '%'; }
+    if (rightOverlay) { rightOverlay.style.left = maxPct + '%'; rightOverlay.style.width = (100 - maxPct) + '%'; }
+
+    // Color the thumbs to match their current EPC position
+    minInput.style.setProperty('--thumb-color', EPC_COLORS[minVal]);
+    maxInput.style.setProperty('--thumb-color', EPC_COLORS[maxVal]);
+
+    // Highlight active groups
+    for (const [name, indices] of Object.entries(IMMOVLAN_EPC_GROUPS)) {
+        const el = document.getElementById('epc-group-' + name);
+        if (el) el.classList.toggle('epc-group--active', indices.some(i => i >= minVal && i <= maxVal));
+    }
+
+    // Selection summary label
+    const label = document.getElementById('epc-sel-label');
+    if (label) {
+        if (minVal === 0 && maxVal === 8) {
+            label.textContent = TRANSLATIONS.epc_all ?? 'Tous';
+        } else if (minVal === maxVal) {
+            label.textContent = EPC_SCALE[minVal];
+        } else {
+            label.textContent = EPC_SCALE[minVal] + ' → ' + EPC_SCALE[maxVal];
+        }
+    }
+
+    // Z-index: when min is past the midpoint, bring it above max so it can be dragged left
+    if (minVal / 8 >= 0.5) {
+        minInput.style.zIndex = 2;
+        maxInput.style.zIndex = 1;
+    } else {
+        minInput.style.zIndex = 1;
+        maxInput.style.zIndex = 2;
+    }
+}
+
 // ── Update combined URLs + city links ─────────────────────────
 function updateUrls() {
     if (!searchResults) return;
@@ -335,7 +415,8 @@ function saveConfigCookie() {
             max_price:         fs.maxPrice,
             min_bedrooms:      fs.minBedrooms,
             max_bedrooms:      fs.maxBedrooms,
-            epc_scores:          fs.epcScores,
+            epc_min:             fs.epcMin,
+            epc_max:             fs.epcMax,
             include_under_option: fs.includeUnderOption,
         },
     };
@@ -354,9 +435,23 @@ function resetFilters() {
     document.querySelectorAll('input[name="subtype"]').forEach(cb => {
         cb.checked = !cfg.property_subtypes?.length || cfg.property_subtypes.includes(cb.value);
     });
-    document.querySelectorAll('input[name="epc"]').forEach(cb => {
-        cb.checked = cfg.epc_scores?.includes(cb.value) ?? false;
-    });
+    const epcMin = document.getElementById('f-epc-min');
+    const epcMax = document.getElementById('f-epc-max');
+    if (epcMin && epcMax) {
+        if (cfg.epc_min != null) {
+            epcMin.value = cfg.epc_min;
+            epcMax.value = cfg.epc_max ?? 8;
+        } else if (cfg.epc_scores?.length) {
+            // backward compat: old cookie stored individual scores
+            const indices = cfg.epc_scores.map(s => EPC_SCALE.indexOf(s)).filter(i => i >= 0);
+            epcMin.value = indices.length ? Math.min(...indices) : 0;
+            epcMax.value = indices.length ? Math.max(...indices) : 8;
+        } else {
+            epcMin.value = 0;
+            epcMax.value = 8;
+        }
+        updateEpcSliderUI();
+    }
     const underOpt = document.getElementById('f-include-under-option');
     if (underOpt) underOpt.checked = cfg.include_under_option ?? false;
     updateUrls();
@@ -449,6 +544,21 @@ document.addEventListener('DOMContentLoaded', () => {
         el.addEventListener('change', updateUrls);
         el.addEventListener('input',  updateUrls);
     });
+
+    // EPC slider: enforce min ≤ max and sync visual state
+    const epcMinEl = document.getElementById('f-epc-min');
+    const epcMaxEl = document.getElementById('f-epc-max');
+    if (epcMinEl && epcMaxEl) {
+        epcMinEl.addEventListener('input', () => {
+            if (parseInt(epcMinEl.value) > parseInt(epcMaxEl.value)) epcMinEl.value = epcMaxEl.value;
+            updateEpcSliderUI();
+        });
+        epcMaxEl.addEventListener('input', () => {
+            if (parseInt(epcMaxEl.value) < parseInt(epcMinEl.value)) epcMaxEl.value = epcMinEl.value;
+            updateEpcSliderUI();
+        });
+        updateEpcSliderUI(); // initialise visual state on load
+    }
 
     // Direction dropdowns → redraw compass
     document.getElementById('f-dir-from')?.addEventListener('change', drawCompass);

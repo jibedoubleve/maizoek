@@ -34,7 +34,18 @@ $versionInfo = file_exists($versionFile)
 
 $directions   = ['North','NorthEast','East','SouthEast','South','SouthWest','West','NorthWest'];
 $all_subtypes = ['HOUSE','VILLA','MANSION','MANOR_HOUSE','CHALET','FARMHOUSE','EXCEPTIONAL_PROPERTY','TOWN_HOUSE','CASTLE','BUNGALOW','COUNTRY_COTTAGE','PAVILION'];
-$all_epc      = ['A++','A+','A','B','C','D','E','F'];
+$epc_scale_order = ['A++' => 0, 'A+' => 1, 'A' => 2, 'B' => 3, 'C' => 4, 'D' => 5, 'E' => 6, 'F' => 7, 'G' => 8];
+if (isset($immoweb['epc_min']) && isset($immoweb['epc_max'])) {
+    $epc_min = (int)$immoweb['epc_min'];
+    $epc_max = (int)$immoweb['epc_max'];
+} elseif (!empty($immoweb['epc_scores'])) {
+    $indices = array_values(array_filter(array_map(fn($s) => $epc_scale_order[$s] ?? null, $immoweb['epc_scores']), fn($v) => $v !== null));
+    $epc_min = $indices ? min($indices) : 0;
+    $epc_max = $indices ? max($indices) : 8;
+} else {
+    $epc_min = 0;
+    $epc_max = 8;
+}
 
 function h($s)          { return htmlspecialchars((string)($s ?? ''), ENT_QUOTES, 'UTF-8'); }
 function sel($a, $b)    { return $a === $b ? ' selected' : ''; }
@@ -227,15 +238,28 @@ function subtypeLabel(string $st, array $t): string {
                     <?php endforeach; ?>
                 </div>
 
-                <span class="filter-label"><?= h($t['epc'] ?? 'PEB') ?> <span class="provider-badge" data-tooltip="<?= h($t['badge_tooltip_immoweb_only'] ?? 'Non disponible sur Trevi et ImmoVlan') ?>">Immoweb</span></span>
-                <div class="filter-chips">
-                    <?php foreach ($all_epc as $score): ?>
-                    <label class="filter-chip">
-                        <input type="checkbox" name="epc" value="<?= h($score) ?>"
-                            <?= chk(in_array($score, $immoweb['epc_scores'] ?? [])) ?>>
-                        <?= h($score) ?>
-                    </label>
-                    <?php endforeach; ?>
+                <span class="filter-label"><?= h($t['epc'] ?? 'PEB') ?> <span class="provider-badge" data-tooltip="<?= h($t['badge_tooltip_epc'] ?? 'Groupes Wallonie sur ImmoVlan') ?>">Immoweb · ImmoVlan</span></span>
+                <div class="epc-slider-wrap">
+                    <div class="epc-track-container">
+                        <div class="epc-track-bg"></div>
+                        <div class="epc-inactive" id="epc-inactive-left"></div>
+                        <div class="epc-inactive" id="epc-inactive-right"></div>
+                        <input type="range" class="epc-range" id="f-epc-min"
+                               min="0" max="8" value="<?= h($epc_min) ?>">
+                        <input type="range" class="epc-range" id="f-epc-max"
+                               min="0" max="8" value="<?= h($epc_max) ?>">
+                    </div>
+                    <div class="epc-scale-labels">
+                        <span>A++</span><span>A+</span><span>A</span><span>B</span>
+                        <span>C</span><span>D</span><span>E</span><span>F</span><span>G</span>
+                    </div>
+                    <div class="epc-groups">
+                        <span class="epc-group" id="epc-group-excellent"><?= h($t['epc_excellent'] ?? 'Excellent') ?></span>
+                        <span class="epc-group" id="epc-group-good"><?= h($t['epc_good'] ?? 'Bon') ?></span>
+                        <span class="epc-group" id="epc-group-poor"><?= h($t['epc_poor'] ?? 'Moyen') ?></span>
+                        <span class="epc-group" id="epc-group-bad"><?= h($t['epc_bad'] ?? 'Mauvais') ?></span>
+                    </div>
+                    <div class="epc-sel-label" id="epc-sel-label"></div>
                 </div>
 
                 <div class="param-row">
