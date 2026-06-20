@@ -23,10 +23,21 @@ const IMMOVLAN_EPC_GROUPS = {
     bad:       [7, 8],
 };
 
+// ── Isochrone: traffic factors (same as commute_zone.js) ─────
+const TRAFFIC_FACTORS = {
+     0: 1.00,  1: 1.00,  2: 1.00,  3: 1.00,  4: 1.00,
+     5: 1.05,  6: 1.15,  7: 1.35,  8: 1.40,  9: 1.25,
+    10: 1.10, 11: 1.05, 12: 1.10, 13: 1.05, 14: 1.05,
+    15: 1.15, 16: 1.30, 17: 1.40, 18: 1.35, 19: 1.20,
+    20: 1.10, 21: 1.05, 22: 1.00, 23: 1.00,
+};
+
 // ── State ─────────────────────────────────────────────────────
-let searchResults = null;
-let leafletMap    = null;
-let markersLayer  = null;
+let searchResults    = null;
+let leafletMap       = null;
+let markersLayer     = null;
+let isoLayers        = [];
+let pendingMapBounds = null; // applied after tab becomes visible + invalidateSize
 
 // ── Helpers ───────────────────────────────────────────────────
 function enc(v) {
@@ -188,6 +199,54 @@ function buildImmovlanCity(name, postal, s) {
     return `https://immovlan.be/fr/immobilier?${qs(pairs)}`;
 }
 
+// ── Geo mode ──────────────────────────────────────────────────
+function getGeoMode() {
+    return document.querySelector('.geo-tab.active')?.dataset.geoMode || 'geographic';
+}
+
+function getIsochroneState() {
+    return {
+        address1:       val('cz-address1'),
+        address2:       val('cz-address2'),
+        max_minutes1:   parseInt(val('cz-max-time-1')) || 30,
+        max_minutes2:   parseInt(val('cz-max-time-2')) || 30,
+        departure_time: val('cz-departure') || '08:00',
+    };
+}
+
+function applyTrafficFactor(minutes, hour) {
+    return Math.round(minutes / (TRAFFIC_FACTORS[hour] ?? 1.0));
+}
+
+function updateAdjustedTime() {
+    const state = getIsochroneState();
+    const hour  = parseInt((state.departure_time || '08:00').split(':')[0]);
+    const tpl   = TRANSLATIONS.cz_adjusted_time ?? 'Temps ajusté : ~%d min';
+    const el1   = document.getElementById('cz-adjusted-time-1');
+    const el2   = document.getElementById('cz-adjusted-time-2');
+    if (el1) el1.textContent = tpl.replace('%d', applyTrafficFactor(state.max_minutes1, hour));
+    if (el2) el2.textContent = tpl.replace('%d', applyTrafficFactor(state.max_minutes2, hour));
+}
+
+function saveCzCookie() {
+    const expires = new Date();
+    expires.setFullYear(expires.getFullYear() + 1);
+    document.cookie = `cz_config=${encodeURIComponent(JSON.stringify(getIsochroneState()))};expires=${expires.toUTCString()};path=/;SameSite=Lax`;
+}
+
+function loadCzCookie() {
+    const match = document.cookie.match(/(?:^|;\s*)cz_config=([^;]*)/);
+    if (!match) return;
+    try {
+        const cfg = JSON.parse(decodeURIComponent(match[1]));
+        if (cfg.address1)       { const el = document.getElementById('cz-address1');   if (el) el.value = cfg.address1; }
+        if (cfg.address2)       { const el = document.getElementById('cz-address2');   if (el) el.value = cfg.address2; }
+        if (cfg.max_minutes1)   { const el = document.getElementById('cz-max-time-1'); if (el) el.value = cfg.max_minutes1; }
+        if (cfg.max_minutes2)   { const el = document.getElementById('cz-max-time-2'); if (el) el.value = cfg.max_minutes2; }
+        if (cfg.departure_time) { const el = document.getElementById('cz-departure');  if (el) el.value = cfg.departure_time; }
+    } catch (e) { /* cookie corrompu */ }
+}
+
 // ── Map ───────────────────────────────────────────────────────
 function initMap(center) {
     if (leafletMap) { leafletMap.remove(); leafletMap = null; }
@@ -200,6 +259,8 @@ function initMap(center) {
 
 function updateMap(data) {
     if (!leafletMap) initMap(data.center);
+    isoLayers.forEach(l => leafletMap.removeLayer(l));
+    isoLayers = [];
     markersLayer.clearLayers();
     const bounds = [];
     data.cities.forEach(city => {
@@ -208,7 +269,7 @@ function updateMap(data) {
             .addTo(markersLayer);
         bounds.push([city.lat, city.lng]);
     });
-    if (bounds.length) leafletMap.fitBounds(bounds, { padding: [30, 30], maxZoom: 11 });
+    if (bounds.length) pendingMapBounds = { bounds, options: { padding: [30, 30], maxZoom: 11 } };
 }
 
 // ── Compass ───────────────────────────────────────────────────
@@ -388,10 +449,28 @@ function updateUrls() {
 }
 
 // ── Tabs ──────────────────────────────────────────────────────
+let mapResizeObserver = null;
+
 function switchTab(tabId) {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tabId));
     document.querySelectorAll('.tab-panel').forEach(p => { p.hidden = p.id !== 'tab-' + tabId; });
-    if (tabId === 'results' && leafletMap) setTimeout(() => leafletMap.invalidateSize(), 50);
+
+    if (tabId === 'results' && leafletMap) {
+        const mapEl = document.getElementById('map');
+        if (mapResizeObserver) mapResizeObserver.disconnect();
+        mapResizeObserver = new ResizeObserver(entries => {
+            const { width, height } = entries[0].contentRect;
+            if (width === 0 || height === 0) return;
+            mapResizeObserver.disconnect();
+            mapResizeObserver = null;
+            leafletMap.invalidateSize();
+            if (pendingMapBounds) {
+                leafletMap.fitBounds(pendingMapBounds.bounds, pendingMapBounds.options);
+                pendingMapBounds = null;
+            }
+        });
+        mapResizeObserver.observe(mapEl);
+    }
 }
 
 // ── Cookie ────────────────────────────────────────────────────
@@ -457,8 +536,121 @@ function resetFilters() {
     updateUrls();
 }
 
+// ── Isochrone map ─────────────────────────────────────────────
+function updateMapIsochrone(poly1, poly2, intersection, cities) {
+    const centroid = turf.centroid(turf.feature(intersection));
+    const [lng, lat] = centroid.geometry.coordinates;
+    if (!leafletMap) initMap({ lat, lng });
+
+    isoLayers.forEach(l => leafletMap.removeLayer(l));
+    isoLayers = [];
+    markersLayer.clearLayers();
+
+    const l1 = L.geoJSON(poly1, { style: { color: '#003f7f', fillColor: '#003f7f', fillOpacity: 0.12, weight: 2 } }).addTo(leafletMap);
+    const l2 = L.geoJSON(poly2, { style: { color: '#c0392b', fillColor: '#c0392b', fillOpacity: 0.12, weight: 2 } }).addTo(leafletMap);
+    const li = L.geoJSON(intersection, { style: { color: '#2E7D32', fillColor: '#2E7D32', fillOpacity: 0.35, weight: 2 } }).addTo(leafletMap);
+    isoLayers = [l1, l2, li];
+
+    cities.forEach(city => {
+        L.marker([city.lat, city.lng])
+            .bindTooltip(`${city.name}${city.postal ? ' (' + city.postal + ')' : ''}`)
+            .addTo(markersLayer);
+    });
+
+    pendingMapBounds = { bounds: li.getBounds().pad(0.1), options: { padding: [20, 20] } };
+}
+
+// ── Isochrone search ──────────────────────────────────────────
+async function executeIsochroneSearch() {
+    const btn      = document.getElementById('btn-search');
+    const status   = document.getElementById('search-status');
+    const spinner  = document.getElementById('search-spinner');
+    const label    = document.getElementById('search-label');
+    const progress = document.getElementById('search-progress');
+    const errEl    = document.getElementById('cz-error');
+
+    if (errEl) errEl.hidden = true;
+    btn.disabled = true;
+    if (spinner) spinner.hidden = false;
+    if (status)  { status.textContent = ''; status.hidden = true; }
+
+    try {
+        const isoState = getIsochroneState();
+        if (!isoState.address1 || !isoState.address2) {
+            throw new Error(TRANSLATIONS.cz_error_address?.replace('%s', '').replace(': ', '') ?? 'Renseignez les deux adresses');
+        }
+
+        if (label)    label.textContent    = TRANSLATIONS.cz_calculating ?? 'Calcul des zones…';
+        if (progress) { progress.textContent = TRANSLATIONS.cz_calculating ?? 'Calcul des zones isochrones…'; progress.hidden = false; }
+
+        const isoResp = await fetch('isochrone_api.php', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(isoState),
+        });
+        const isoData = await isoResp.json();
+        if (!isoResp.ok) {
+            if (isoData.error === 'address_not_found')
+                throw new Error((TRANSLATIONS.cz_error_address ?? 'Adresse introuvable : %s').replace('%s', isoData.address ?? ''));
+            throw new Error(TRANSLATIONS.cz_error_ors ?? 'Erreur lors du calcul de la zone. Réessayez.');
+        }
+
+        const intersection = turf.intersect(turf.feature(isoData.poly1), turf.feature(isoData.poly2));
+        if (!intersection) throw new Error(TRANSLATIONS.cz_no_intersection ?? 'Aucune zone commune — augmentez le temps ou modifiez les adresses.');
+
+        if (label)    label.textContent    = TRANSLATIONS.search_progress ?? 'Recherche des communes…';
+        if (progress) progress.textContent = TRANSLATIONS.search_progress ?? 'Recherche des communes dans la zone…';
+
+        const sp = getSearchParams();
+        const polyResp = await fetch('polygon_cities.php', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                polygon:           intersection.geometry,
+                min_population:    sp.min_population,
+                ignore_population: sp.ignore_population,
+                regions:           sp.regions,
+            }),
+        });
+        const polyData = await polyResp.json();
+        if (!polyResp.ok || polyData.error) throw new Error(polyData.error || 'Erreur serveur');
+
+        const filteredCities  = polyData.cities.filter(c => turf.booleanPointInPolygon([c.lng, c.lat], intersection));
+        const filteredPostals = [...new Set(filteredCities.map(c => c.postal).filter(Boolean))];
+
+        searchResults = { center: polyData.center, cities: filteredCities, postalCodes: filteredPostals };
+        saveCzCookie();
+
+        const s = getFilterState();
+        updateMapIsochrone(isoData.poly1, isoData.poly2, intersection.geometry, filteredCities);
+        renderCitiesList(filteredCities, s);
+        updateUrls();
+
+        const mapTitle = document.getElementById('map-title');
+        if (mapTitle) mapTitle.textContent = `${filteredCities.length} ${TRANSLATIONS.map_cities_label ?? 'communes dans votre zone'}`;
+
+        const toggleBtn   = document.getElementById('btn-toggle-cities');
+        const toggleLabel = document.getElementById('cities-toggle-label');
+        if (toggleBtn && toggleLabel) {
+            toggleLabel.textContent = (TRANSLATIONS.view_cities ?? 'Voir les %d communes incluses').replace('%d', filteredCities.length);
+            toggleBtn.hidden = false;
+        }
+
+        document.getElementById('tab-btn-results').hidden = false;
+        switchTab('results');
+
+    } catch (err) {
+        if (status) { status.textContent = '⚠ ' + err.message; status.hidden = false; }
+        if (errEl)  { errEl.textContent = err.message; errEl.hidden = false; }
+    } finally {
+        btn.disabled = false;
+        if (spinner)  spinner.hidden = true;
+        if (label)    label.textContent = TRANSLATIONS.generate_links ?? 'Voir les annonces';
+        if (progress) progress.hidden = true;
+    }
+}
+
 // ── Search ────────────────────────────────────────────────────
 async function executeSearch() {
+    if (getGeoMode() === 'isochrone') return executeIsochroneSearch();
     const btn     = document.getElementById('btn-search');
     const status  = document.getElementById('search-status');
     const spinner = document.getElementById('search-spinner');
@@ -519,6 +711,30 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('f-address')?.focus();
     document.getElementById('btn-search').addEventListener('click', executeSearch);
     document.getElementById('f-reset')?.addEventListener('click', resetFilters);
+
+    // Geo mode tabs
+    document.querySelectorAll('.geo-tab').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.geo-tab').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const mode = btn.dataset.geoMode;
+            document.getElementById('geo-geographic').hidden = (mode !== 'geographic');
+            document.getElementById('geo-isochrone').hidden  = (mode !== 'isochrone');
+        });
+    });
+
+    // Isochrone fields: save cookie + update adjusted time labels
+    loadCzCookie();
+    ['cz-address1', 'cz-address2', 'cz-max-time-1', 'cz-max-time-2', 'cz-departure'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('input',  saveCzCookie);
+        el.addEventListener('change', saveCzCookie);
+    });
+    document.getElementById('cz-max-time-1')?.addEventListener('input',  updateAdjustedTime);
+    document.getElementById('cz-max-time-2')?.addEventListener('input',  updateAdjustedTime);
+    document.getElementById('cz-departure')?.addEventListener('change',  updateAdjustedTime);
+    updateAdjustedTime();
 
     document.getElementById('btn-toggle-cities')?.addEventListener('click', () => {
         const panel   = document.getElementById('cities-panel');

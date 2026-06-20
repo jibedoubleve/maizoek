@@ -4,6 +4,7 @@
 # Application
 cache.sqlite
 *.bak
+*.sqlite*
 
 # other
 typescript

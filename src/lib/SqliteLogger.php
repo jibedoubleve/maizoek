@@ -29,8 +29,13 @@ class SqliteLogger extends AbstractLogger
     {
         $this->db = new PDO('sqlite:' . $db_path);
         $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $this->db->exec('PRAGMA journal_mode=WAL');
         self::ensureTable($this->db);
-        $this->pruneOldEntries();
+        try {
+            $this->pruneOldEntries();
+        } catch (\Throwable $e) {
+            // Pruning failure (e.g. transient lock) must not crash the logger
+        }
     }
 
     public function log($level, string|\Stringable $message, array $context = []): void
