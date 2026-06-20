@@ -1,3 +1,4 @@
 RewriteEngine On
+RewriteRule ^commute-zone$ commute_zone.php [L]
 RewriteCond %{HTTP:Authorization} ^(.+)$
 RewriteRule .* - [E=HTTP_AUTHORIZATION:%1]

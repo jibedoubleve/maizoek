@@ -124,6 +124,20 @@ body {
 .tab-btn:hover  { color: var(--color-text); }
 .tab-btn.active { color: var(--color-immoweb); border-bottom-color: var(--color-immoweb); }
 
+/* ── Geo mode tabs ── */
+.geo-mode-tabs {
+    display: flex; margin-bottom: 12px;
+    border: 1px solid var(--color-border); border-radius: 8px; overflow: hidden;
+}
+.geo-tab {
+    flex: 1; padding: 6px 12px; border: none; cursor: pointer;
+    font-size: 0.82em; font-weight: 600; color: var(--color-text-muted);
+    background: var(--color-bg); transition: background 0.12s, color 0.12s;
+}
+.geo-tab:not(:last-child) { border-right: 1px solid var(--color-border); }
+.geo-tab.active { background: var(--color-immoweb); color: #fff; }
+.geo-tab:hover:not(.active) { background: var(--color-immoweb-light); color: var(--color-immoweb); }
+
 /* ── Params tab ── */
 .params-grid {
     display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
@@ -398,6 +412,52 @@ body {
 }
 .lang-btn:hover { border-color: var(--color-immoweb); color: var(--color-immoweb); }
 .lang-btn.active { background: var(--color-immoweb); color: #fff; border-color: var(--color-immoweb); }
+
+/* ── Commute zone page ── */
+#cz-map {
+    height: 520px; border-radius: var(--radius);
+    border: 1px solid var(--color-border); margin-top: 16px;
+}
+.cz-warning {
+    margin: 12px 0 4px; padding: 8px 12px;
+    background: #fff8e1; border: 1px solid #ffe082; border-radius: 6px;
+    font-size: 0.82em; color: #795548;
+}
+.cz-address-row { display: flex; align-items: center; gap: 6px; }
+.cz-address-row .form-input:first-child { flex: 1; min-width: 0; }
+.cz-adjusted {
+    font-size: 0.78em; color: var(--color-text-muted);
+    text-align: right; font-style: italic; min-height: 1.2em;
+}
+.cz-error {
+    margin-top: 10px; padding: 8px 12px;
+    background: #fbeaea; border: 1px solid #f5c6c6; border-radius: 6px;
+    font-size: 0.85em; color: #c0392b;
+}
+.cz-legend { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+.cz-legend-item {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 0.78em; color: var(--color-text-muted);
+}
+.cz-legend-item::before {
+    content: ''; display: inline-block;
+    width: 12px; height: 12px; border-radius: 2px; flex-shrink: 0;
+}
+.cz-legend-blue::before  { background: rgba(0,63,127,0.2);  border: 2px solid #003f7f; }
+.cz-legend-red::before   { background: rgba(192,57,43,0.2); border: 2px solid #c0392b; }
+.cz-legend-green::before { background: rgba(46,125,50,0.4); border: 2px solid #2E7D32; }
+.back-link {
+    color: var(--color-text-muted); text-decoration: none; font-size: 0.85em;
+    transition: color 0.15s;
+}
+.back-link:hover { color: var(--color-text); }
+.cz-nav-link {
+    font-size: 0.82em; font-weight: 600;
+    color: var(--color-text-muted); text-decoration: none;
+    padding: 4px 10px; border-radius: 6px; border: 1px solid var(--color-border);
+    white-space: nowrap; transition: all 0.12s;
+}
+.cz-nav-link:hover { border-color: var(--color-immoweb); color: var(--color-immoweb); }
 
 /* ── Responsive ── */
 @media (max-width: 640px) {

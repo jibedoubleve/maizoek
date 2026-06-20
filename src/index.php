@@ -53,20 +53,11 @@ function chk($cond)     { return $cond ? ' checked' : ''; }
 function subtypeLabel(string $st, array $t): string {
     return $t[$st] ?? ucwords(strtolower(str_replace('_', ' ', $st)));
 }
+$title = $t['title'] ?? 'Recherche Immobilière';
+require __DIR__ . '/lib/_head.php';
+$client_config = $config;
+unset($client_config['fcodes']);
 ?>
-<!DOCTYPE html>
-<html lang="<?= h($lang) ?>">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= h($t['title'] ?? 'Recherche Immobilière') ?></title>
-    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="assets/app.css">
-    <?php
-    $client_config = $config;
-    unset($client_config['fcodes']);
-    ?>
     <script>const DEFAULT_CONFIG = <?= json_encode($client_config, JSON_UNESCAPED_UNICODE) ?>;
     const DIRECTIONS = <?= json_encode(DIRECTIONS) ?>;
     const TRANSLATIONS = <?= json_encode($t, JSON_UNESCAPED_UNICODE) ?>;
@@ -107,71 +98,121 @@ function subtypeLabel(string $st, array $t): string {
             <!-- Zone de recherche -->
             <div class="params-card">
                 <p class="params-card-title"><?= h($t['location_params'] ?? 'Zone de recherche') ?></p>
-                <div class="section-compass">
-                    <div>
-                        <div class="param-row">
-                            <span class="param-label"><?= h($t['center'] ?? 'Centre') ?></span>
-                            <div class="param-value">
-                                <input class="form-input" type="text" id="f-address"
-                                    value="<?= h($config['address'] ?? '') ?>" placeholder="Ex: Liège">
+
+                <!-- Mode toggle -->
+                <div class="geo-mode-tabs">
+                    <button class="geo-tab active" data-geo-mode="geographic">
+                        <?= h($t['geo_tab_geographic'] ?? 'Zone géographique') ?>
+                    </button>
+                    <button class="geo-tab" data-geo-mode="isochrone">
+                        <?= h($t['geo_tab_isochrone'] ?? 'Isochrone') ?>
+                    </button>
+                </div>
+
+                <!-- Common: regions + population (both modes) -->
+                <div class="param-row">
+                    <span class="param-label"><?= h($t['regions'] ?? 'Régions') ?></span>
+                    <div class="param-value" style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
+                        <?php foreach (['WAL','BRU','VLG'] as $region): ?>
+                        <label class="filter-chip">
+                            <input type="checkbox" name="region" value="<?= h($region) ?>"
+                                <?= chk(in_array($region, $config['regions'] ?? [])) ?>>
+                            <?= h($region) ?>
+                        </label>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+                <div class="param-row" id="f-population-row"<?= ($config['ignore_population'] ?? false) ? ' hidden' : '' ?>>
+                    <span class="param-label"><?= h($t['min_population'] ?? 'Population min.') ?></span>
+                    <div class="param-value">
+                        <input class="form-input" type="number" id="f-min-population"
+                            value="<?= h($config['min_population'] ?? 5000) ?>" min="0" step="1000">
+                    </div>
+                </div>
+                <div class="param-row">
+                    <span class="param-label"><?= h($t['no_population_limit'] ?? 'Tous les lieux') ?></span>
+                    <div class="param-value">
+                        <input type="checkbox" id="f-ignore-population"
+                            <?= chk($config['ignore_population'] ?? false) ?>>
+                    </div>
+                </div>
+
+                <!-- Geographic mode fields -->
+                <div id="geo-geographic">
+                    <div class="section-compass">
+                        <div>
+                            <div class="param-row">
+                                <span class="param-label"><?= h($t['center'] ?? 'Centre') ?></span>
+                                <div class="param-value">
+                                    <input class="form-input" type="text" id="f-address"
+                                        value="<?= h($config['address'] ?? '') ?>" placeholder="Ex: Liège">
+                                </div>
+                            </div>
+                            <div class="param-row">
+                                <span class="param-label"><?= h($t['radius'] ?? 'Rayon') ?></span>
+                                <div class="param-value" style="display:flex;align-items:center;gap:6px;justify-content:flex-end">
+                                    <input class="form-input form-input-sm" type="number" id="f-radius"
+                                        value="<?= h($config['radius'] ?? 30) ?>" min="1" max="200">
+                                    <span style="font-size:0.82em;color:var(--color-text-muted)">km</span>
+                                </div>
+                            </div>
+                            <div class="param-row">
+                                <span class="param-label"><?= h($t['dir_from'] ?? 'Direction de') ?></span>
+                                <div class="param-value">
+                                    <select class="form-input" id="f-dir-from">
+                                        <?php foreach ($directions as $d): ?>
+                                        <option value="<?= h($d) ?>"<?= sel($d, $config['dir_from'] ?? 'North') ?>><?= h($d) ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="param-row">
+                                <span class="param-label"><?= h($t['dir_to'] ?? 'Direction à') ?></span>
+                                <div class="param-value">
+                                    <select class="form-input" id="f-dir-to">
+                                        <?php foreach ($directions as $d): ?>
+                                        <option value="<?= h($d) ?>"<?= sel($d, $config['dir_to'] ?? 'North') ?>><?= h($d) ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
                             </div>
                         </div>
-                        <div class="param-row">
-                            <span class="param-label"><?= h($t['radius'] ?? 'Rayon') ?></span>
-                            <div class="param-value" style="display:flex;align-items:center;gap:6px;justify-content:flex-end">
-                                <input class="form-input form-input-sm" type="number" id="f-radius"
-                                    value="<?= h($config['radius'] ?? 30) ?>" min="1" max="200">
-                                <span style="font-size:0.82em;color:var(--color-text-muted)">km</span>
-                            </div>
-                        </div>
-                        <div class="param-row">
-                            <span class="param-label"><?= h($t['regions'] ?? 'Régions') ?></span>
-                            <div class="param-value" style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
-                                <?php foreach (['WAL','BRU','VLG'] as $region): ?>
-                                <label class="filter-chip">
-                                    <input type="checkbox" name="region" value="<?= h($region) ?>"
-                                        <?= chk(in_array($region, $config['regions'] ?? [])) ?>>
-                                    <?= h($region) ?>
-                                </label>
-                                <?php endforeach; ?>
-                            </div>
-                        </div>
-                        <div class="param-row">
-                            <span class="param-label"><?= h($t['dir_from'] ?? 'Direction de') ?></span>
-                            <div class="param-value">
-                                <select class="form-input" id="f-dir-from">
-                                    <?php foreach ($directions as $d): ?>
-                                    <option value="<?= h($d) ?>"<?= sel($d, $config['dir_from'] ?? 'North') ?>><?= h($d) ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="param-row">
-                            <span class="param-label"><?= h($t['dir_to'] ?? 'Direction à') ?></span>
-                            <div class="param-value">
-                                <select class="form-input" id="f-dir-to">
-                                    <?php foreach ($directions as $d): ?>
-                                    <option value="<?= h($d) ?>"<?= sel($d, $config['dir_to'] ?? 'North') ?>><?= h($d) ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="param-row" id="f-population-row"<?= ($config['ignore_population'] ?? false) ? ' hidden' : '' ?>>
-                            <span class="param-label"><?= h($t['min_population'] ?? 'Population min.') ?></span>
-                            <div class="param-value">
-                                <input class="form-input" type="number" id="f-min-population"
-                                    value="<?= h($config['min_population'] ?? 5000) ?>" min="0" step="1000">
-                            </div>
-                        </div>
-                        <div class="param-row">
-                            <span class="param-label"><?= h($t['no_population_limit'] ?? 'Tous les lieux') ?></span>
-                            <div class="param-value">
-                                <input type="checkbox" id="f-ignore-population"
-                                    <?= chk($config['ignore_population'] ?? false) ?>>
-                            </div>
+                        <canvas id="compass" width="100" height="100" style="flex-shrink:0"></canvas>
+                    </div>
+                </div>
+
+                <!-- Isochrone mode fields -->
+                <div id="geo-isochrone" hidden>
+                    <div class="param-row">
+                        <span class="param-label"><?= h($t['cz_address1'] ?? 'Adresse 1') ?></span>
+                        <div class="param-value cz-address-row">
+                            <input class="form-input" type="text" id="cz-address1"
+                                placeholder="<?= h($t['cz_address_placeholder'] ?? '') ?>">
+                            <input class="form-input form-input-sm" type="number" id="cz-max-time-1"
+                                value="30" min="5" max="60">
+                            <span class="filter-unit">min</span>
                         </div>
                     </div>
-                    <canvas id="compass" width="100" height="100" style="flex-shrink:0"></canvas>
+                    <div class="param-row">
+                        <span class="param-label"><?= h($t['cz_address2'] ?? 'Adresse 2') ?></span>
+                        <div class="param-value cz-address-row">
+                            <input class="form-input" type="text" id="cz-address2"
+                                placeholder="<?= h($t['cz_address_placeholder'] ?? '') ?>">
+                            <input class="form-input form-input-sm" type="number" id="cz-max-time-2"
+                                value="30" min="5" max="60">
+                            <span class="filter-unit">min</span>
+                        </div>
+                    </div>
+                    <div class="param-row">
+                        <span class="param-label"><?= h($t['cz_departure_time'] ?? 'Heure de départ') ?></span>
+                        <div class="param-value">
+                            <input class="form-input" type="time" id="cz-departure" value="08:00">
+                        </div>
+                    </div>
+                    <div class="cz-warning"><?= h($t['cz_traffic_warning'] ?? '') ?></div>
+                    <div class="cz-adjusted" id="cz-adjusted-time-1"></div>
+                    <div class="cz-adjusted" id="cz-adjusted-time-2"></div>
+                    <div id="cz-error" class="cz-error" hidden></div>
                 </div>
             </div>
 
@@ -349,6 +390,7 @@ function subtypeLabel(string $st, array $t): string {
 </footer>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
 <script src="assets/app.js"></script>
 </body>
 </html>
